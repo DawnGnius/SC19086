@@ -1,0 +1,220 @@
+---
+title: "Homework-2019.09.30"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+The Rayleigh density is
+\begin{equation}
+f(x) = \frac{x}{\sigma^2} e^{-x^2/(2\sigma^2)}, \quad\quad x\ge 0, \sigma> 0.
+\end{equation}
+
+Develop an algorithm to generate random samples from a Rayleigh($\sigma$) distribution. Generate Rayleigh($\sigma$) samples for several choices of $\sigma>0$ and check that the mode of the generated samples is close to the theoretical mode $\sigma$ (check the histogram).
+
+## Question 2
+Generate a random sample of size $1000$ from a normal location mixture. The components of the mixture have $N(0, 1)$ and $N(3, 1)$ distributions with mixing probabilities $p_1$ and $p_2 = 1 − p_1$. Graph the histogram of the sample with density superimposed, for $p_1 = 0.75$. Repeat with different values for $p_1$ and observe whether the empirical distribution of the mixture appears to be bimodal. Make a conjecture about the values of $p_1$ that produce bimodal mixtures.
+
+## Question 3
+Write a function to generate a random sample from a $W_d(\Sigma, n)$ (Wishart) distribution for $n > d + 1 ≥ 1$, based on Bartlett’s decomposition.
+
+## Answer 1
+Aalgorithm: acceptance-rejection.
+
+Let $g(x)$ be the $Uniform(0,1)$ density. The upper bound $c$ of $f(x)/g(x)$ is $1/\sigma^2$, so $c=1/\sigma^2$.
+
+In the following, I use the acceptance-rejection method to define a function which aims to generate a vector of samples of length n from Rayleigh distribution, with parameters $\sigma$.
+
+Then, I make a histogram to confirm that the generated samples is close to the theoretical mode.
+By the way, R does not contain any function about Rayleigh distribution, so I generate the theoretical mode samples by Inverse Transform Method which is supposed to be true. 
+More specifically, the distribution function of Rayleigh distribution is 
+\begin{equation}
+    F^{-1} (x) = -2\sigma^2 ln(1-x)
+\end{equation}
+
+```{r a1}
+set.seed(1111)
+library(ggplot2)
+Rayleigh_arm <- function(n, sigma){
+  # n is siaze of number, sigma is parameter
+  Rayleigh_pdf <- function(x){
+    # define the pdf of Rayleigh distribution
+    x * exp(-x*x/(2*sigma*sigma)) / sigma*sigma
+  }
+  j <- 0 # the time of iteration
+  k <- 0 # the available sample 
+  y <- numeric(n) # a zero vector of length n
+  while (k < n){
+    u <- runif(1)
+    j <- j + 1
+    x <- runif(1) # random variate from g 
+    if (exp(-x*x/(2*sigma*sigma))*(1-x*x/sigma/sigma) > u) {
+      # accept x
+      k <- k + 1
+      y[k] <- x
+    }
+  }
+  return(y)
+}
+Len = 10000
+sigma = 10
+sample_Rayleigh <- Rayleigh_arm(Len, sigma) # record the sample
+head(sample_Rayleigh, 20)
+```
+
+
+```{r}
+#generate the sample by using Inverse Transform Method
+u = runif(Len);
+sample_Rayleigh_theo = -2*sigma*(log(1-u));
+data_Rayleigh <- data.frame(sample = c(sample_Rayleigh,sample_Rayleigh_theo),class = rep(c('empirical','theoretical'),each = 1000))#construst a data frame in order to generate a figure
+ggplot(data_Rayleigh,aes(x = sample,fill = class))+geom_histogram(position="identity", alpha=0.5, binwidth = 10)
+```
+
+You can input any positive integer $n$ and positive real number $\sigma$ to the function **Rayleigh_arm** and you will get samples you want. 
+Further, through the picture, we can confirm that the method is right.
+
+
+## Answer 2
+
+**Algorithm:**
+
+1. input $p_1$
+
+2. generate an integer $k\in\{1,2\}$, where $P(1) = 1- P(2) = p_1$
+
+3. if $k=1$ deliver $x$ from  $N(0,1)$
+
+   if $k=2$ deliver $x$ from  $N(3,1)$
+   
+   
+```{r multiplot, include=FALSE}
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+ 
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+ 
+  numPlots = length(plots)
+ 
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+ 
+ if (numPlots==1) {
+    print(plots[[1]])
+ 
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+ 
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+ 
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+```
+```{r}
+set.seed(1111)
+mix_fun <- function(p1){
+  n <- 1000
+  prob <- c(p1, 1-p1)
+  k <- sample(1:2, size=n,replace=TRUE, prob=prob)
+  x <- rep(0, n)
+  x[k==1] <- rnorm(length(which(k==1)), mean=0, sd=1)
+  x[k==2] <- rnorm(length(which(k==2)), mean=3, sd=1)
+  return (list(x=x, k=k))
+}
+draw <- function(mix_data, k){
+  dat1 <- data.frame(data=mix_data, class = rep('Mixture',each = 1000))
+  dat2 <- data.frame(data=mix_data[k==1], class = rep('C1',each = length(which(k==1))))
+  dat3 <- data.frame(data=mix_data[k==2], class = rep('C2',each = length(which(k==2))))
+  pic <- ggplot() + labs(x="x",y="Density",color='black') + ggtitle("Density Superimposed")
+  pic <- pic + geom_density(data=dat1, aes(x=data), position="identity", fill='black', alpha=0.5, show.legend = TRUE)
+  pic1 <- ggplot() + geom_histogram(data=dat1, aes(x=data), binwidth = 0.5,position="identity", fill='black', alpha=0.5, show.legend = TRUE) + labs(x="x",y="Frequency",color='black') + ggtitle("Histogram of Sample")
+  pic <- pic +geom_density(data=dat2, aes(x=data), position="identity", color='blue', alpha=0.3, show.legend = TRUE)
+  pic <- pic +geom_density(data=dat3, aes(x=data), position="identity", color='red', alpha=0.3, show.legend = TRUE)
+  multiplot(pic, pic1, cols=2)
+}
+re <- mix_fun(0.75)
+mix_data <- re$x; k <- re$k
+draw(mix_data, k)
+```
+
+The left pannel shows the emperical distribution of different compoent and the emperical distribution of the mixture (filled region) as well as the histogram of the sample in the right pannel.
+
+Now, let's repeat the experiment with different values for $p_1$. Let $p_1=0.3,0.5,0.9$
+```{r}
+p1=c(0.3,0.5,0.9)
+for (p in p1) {
+  re <- mix_fun(p)
+  mix_data <- re$x; k <- re$k
+  draw(mix_data, k)
+}
+```
+
+From the pictures above, I observe that the empirical distribution of the mixture appears to be bimodal when $0<p_1<1$.
+
+Thus, I make conjecture that when the values of $p_1$ is belong to $(0,1)$ it produces bimodal mixtures. When $p_1=0.5$ its two peaks have the same height.
+
+
+## Answer 3
+
+According to the textbook (page 80), we know that 
+let $T = (T_{ij})$ be a lower triangular $d \times d$ random matrix with independent entries satisfying
+
+1. $T_{i,j}\sim N(0,1), i>j, \; iid$
+
+2. $T_{i,i}\sim\sqrt{\chi^2(n-i+1)}, i=1,...,d, \; iid$.
+
+Then the matrix $A = TT^T$ has a $W_d(I_d, n)$ distribution. 
+To generate $W_d(\Sigma, n)$ random variates, obtain the Choleski factorization $\Sigma = LL^T$ , where $L$ is lower
+triangular. Then $LAL^T ∼ W_d(\Sigma, n)$.
+
+```{r Wishart}
+wishart <- function(n,d,Sig){
+  T <- matrix(rep(0,d*d), nrow=d)
+  for (ii in 1:d) {
+    for (jj in 1:ii) {
+      T[ii,jj] <- rnorm(1)
+    }
+    T[ii,ii] <- sqrt(rchisq(1,n-ii+1))
+  }
+  A <- T %*% t(T)
+  L <- t(chol(Sig))
+  x <- L %*% A %*% t(L)
+  return(x)
+}
+n <- 100
+d <- 10
+Sig <- matrix(rep(0,d*d), nrow=d)
+  for (ii in 1:d) {
+    for (jj in 1:d) {
+      Sig[ii,jj] <- 0.5^abs(ii-jj)
+    }
+  }
+x <- wishart(n,d,Sig)
+head(x)
+```
+
+The function **wishart** is all we need, its input is $n$, $d$ and $\Sigma$.
+
+```{r}
+hist(x)
+```

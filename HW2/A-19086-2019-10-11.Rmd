@@ -118,6 +118,12 @@ The integrand is
   \right.
 \end{equation}
 
+What we wanna is the expections on each interval
+\begin{equation}
+  E \left(\frac{1-e^{-1}}{5\left(1+X^{2}\right)}\right)
+\end{equation}
+where $X$ is obtained by density above.
+
 ```{r a3}
 m <- 10000
 theta.hat <- se <- numeric(6)
@@ -149,31 +155,43 @@ fg <- g(x) / (4 / ((1 + x^2) * pi))
 theta.hat[5] <- mean(fg)
 se[5] <- sd(fg)
 
-
 F.inv <- function(x){
-  (1-exp(-x))/(1-exp(-1))
+  # (1-exp(-x))/(1-exp(-1))
+  -log(1-(1-exp(-1))*x)
 }
 a <- c(0,F.inv(0.2),F.inv(0.4),F.inv(0.6),F.inv(0.8),1)
 
 M <- 20 # number of replicates
 T2 <- numeric(5)
-estimates <- matrix(0, 10, 2)
+n <- 100  # 100 times
+estimates <- matrix(0, n, 2)
 g <- function(x) {
-  exp(-x - log(1+x^2)) * (x > 0) * (x < 1) 
+  exp(-x - log(1+x^2))# * (x > 0) * (x < 1) 
 }
-for (i in 1:10) {
-  estimates[i, 1] <- mean(g(runif(M)))
+
+for (i in 1:n) {
+  estimates[i, 1] <- mean(g(runif(M))) # simple MCMC
   for (jj in 1:5){
     u <- runif(m) # f3, inverse transform method
     x <- - log(exp(-a[jj]) - u * (1 - exp(-1)) / 5)
-    fg <- g(x) / (5*exp(-x) / (1 - exp(-1)))
+    fg <- g(x) / (5*exp(-x) / (1 - exp(-1))) # the function of the random variable, we want to calculate its expectation
     T2[jj] <- mean(fg)
   }
-  estimates[i, 2] <- mean(T2)
+  estimates[i, 2] <- sum(T2)
 }
 
-# print(rbind(theta.hat, se))
+theta.hat[6] <- mean(estimates[,2])
+se[6] <- sd(estimates[,2])
+```
+Comparation with example from EX5.10, where the first 5 colums are result from EX5.10 with different density function $f$ and the 6th colum is result from **Stratified Importance sampling**.
+```{r}
+print(rbind(theta.hat, se))
+```
+
+Some estimation results:
+```{r}
+print(estimates[,2])
 ```
 
 
-### Std. Error
+From the result above we can see that Stratified Importance sampling has the smallest **Std. Error** of estimation as well as **accurate** results.

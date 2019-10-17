@@ -1,0 +1,122 @@
+---
+title: "Homework-2019.10.11"
+author: "19085"
+date: "2019/10/15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## exercise 5.1
+
+To compute a Monte Carlo estimate $\hat{\theta}$  of $\theta=\int_{0}^{\pi / 3} \sin t d t$, we creat function **Monte_carlo**, the parameter of this function is **n**, which represents the number of replicates. we notice that $\theta=\frac{\pi}{3}*E(\sin X)\ \ X \sim \mathrm{U}[0,\pi/3]$, so that we use sample mean to estimate the mean of the population.
+
+```{r }
+Monte_carlo<-function(n){
+set.seed(1468)
+# generate n random number from distribution U[0,pi/3]
+r<-runif(n,min=0,max=pi/3)
+# use the sample mean to estimate the population mean
+MC_value<-pi/3*mean(sin(r))
+# calcullate the true value use function: integrate
+true_value<-integrate(sin,0,pi/3)$value
+return(c(MC_value,true_value))
+}
+# simulation 
+Monte_carlo(1000000)
+```
+
+## exercise 5.10
+
+To use Monte Carlo integration with anithetic variables to estimate  $\theta=\int_{0}^{1} \frac{e^{-x}}{1+x^{2}} d x$, and find the approximate reduction in variance as percentage in contrast with ordinary Monte Carlo method,  we creat function **antithetic_contrast**, the only parameter of this function is **m** which represents the number of replicates.
+
+```{r}
+# library(knitr)
+antithetic_contrast<-function(m){
+  # m should be an even 
+  if(m%%2!=0) m<-m+1
+
+  set.seed(1467)
+  f<-function(x) return(exp(-x)/(1+x^2))
+  r1<-runif(m)
+  # calculate the estimate of ordinary Monte Carlo integration and its variance 
+  MC_value<-mean(f(r1))
+  MC_var<-1/m*var(f(r1))
+  
+  g<-function(x) return(exp(-x)/(1+x^2)+exp(x-1)/(1+(1-x)^2))
+  r2<-runif(m/2)
+  # calculate the estimate of Monte Carlo integration with anithetic variables and its variance 
+  Anti_value<-1/m*sum(g(r2))
+  Anti_var<-1/(2*m)*var(g(r2))
+  result<-rbind(c(MC_value,Anti_value),c( MC_var,Anti_var))
+  rownames(result)<-c('mean','variance')
+  # output the reduction of variance in percentage
+  cat('the reduction in variance is',round(100*(MC_var-Anti_var)/ MC_var,2),'%')
+  knitr::kable(result, format = 'html', row.names = T, col.names = c('MC','Anti'))
+ 
+} 
+
+antithetic_contrast(1000)
+
+
+
+```
+
+## exercise 5.15
+
+We use Stratified Importance sampling to estimate  
+$$
+\int_{0}^{1} \frac{e^{-x}}{1+x^{2}} d x
+$$
+
+firstly, we divide the interval $[0,1]$ into five subintervals by the four fifth-quanliles of the population:
+$$
+\mathrm{F}(\mathrm{x})=\frac{1-e^{-x}}{1-e^{-1}} \quad 0 \leq x \leq 1
+$$
+**quant** is the result, with its first number 0 and last number 1, then in each subinterval, the sampling function which also represents the density function of the random variable in each interval changes to 
+$$
+\frac{5e^{-x}}{1-e^{-1}}
+$$
+
+at the same time, the expectation we want to calculate in each subinterval is 
+$$
+\mathrm{E}\left(\frac{1-e^{-1}}{5\left(1+X^{2}\right)}\right)
+$$
+to generate random number satisfing our demand, we use acceptance-rejection method, in each subinterval, we calculate the optimal **c**, for **g**, we specified it to be the density function of uniform distridution in each subinterval, and due to the whole number of replicates is 10000, in each subinterval, we generate 2000 random numbers. we repeat the estimate 100 times and use the sample standard deviation to estimate standard deviation of population.
+
+
+```{r}
+F<-function(x) return((1-exp(-x))/(1-exp(-1))) # distribution function
+F_inverse<-function(x) return(-log(1-(1-exp(-1))*x)) # the inverse function of distribution function
+G<-function(x) return((1-exp(-1))/(5*(1+x^2))) # the function of the random variable, we want to calculate its expectation
+f<-function(x) return(5*exp(-x)/(1-exp(-1))) # density function of random variable in each subinterval
+
+quant<-F_inverse(seq(0,1,by=1/5)) # interval endpoints of the 5 subintervals
+g<-(quant[-1]-quant[-6])^-1 # the density function of uniform distridution in each subinterval
+theta_hat<-numeric(100)
+for(k in 1:100){
+theta<-numeric(5)
+for(i in 1:5){
+  # use acceptance-rejection method to generate the random number
+ 
+  random_vector<-numeric(0)
+  
+  c<-f(quant[i])/g[i]
+  while (length(random_vector)<2000) {
+    Y<-runif(1,min=quant[i],max=quant[i+1])
+    U<-runif(1)
+    if(U<(f(Y)/(c*g[i]))) random_vector<-c(random_vector,Y)
+  }
+  
+  theta[i]<-mean(G(random_vector))
+  
+}
+
+
+theta_hat[k]<-sum(theta)
+}
+list(theta_hat=theta_hat,sd=sd(theta_hat))
+```
+from the result we can figure out that importance sampling with stratified has a prominent standard deviation reduction in contrast with the one without stratified, the original standard deviation is 0.0970314, meanwhile, the estimation becomes more accurate.

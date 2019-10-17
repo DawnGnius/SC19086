@@ -101,3 +101,79 @@ The antithetic variable approach achieved approximately $96.459\%$ reduction in 
 
 ## Answer 3
 
+### Estimation
+We divide the interval $(0,1)$ into five subintervals, $(a_j, a_{j+1}), j = 0, 1, . . . , 4$ where $a_i$ is $F^{-1}(j/5),\;j=1,2,3,4$, $a_0=1-a_5=0$, $F(x) = \frac{1-e^{-x}}{1-e^{-1}}$.
+Then on the $j$th subinterval variables are generated from the density
+\begin{equation}
+  \frac{5e^{-x}}{1-e^{-1}},\quad\quad a_{j}<x<a_{j+1}
+\end{equation}
+
+The integrand is 
+\begin{equation}
+  g(x) = \left\{
+  \begin{split}
+    e^{-x}/(1+x^2),& \text{ if }(0<x<1); \\
+    0,\quad\quad\quad\quad\quad & \text{ otherwise}.
+  \end{split}
+  \right.
+\end{equation}
+
+```{r a3}
+m <- 10000
+theta.hat <- se <- numeric(6)
+g <- function(x) {
+  exp(-x - log(1+x^2)) * (x > 0) * (x < 1)
+}
+x <- runif(m) # using f0
+fg <- g(x)
+theta.hat[1] <- mean(fg)
+se[1] <- sd(fg)
+x <- rexp(m, 1) # using f1
+fg <- g(x) / exp(-x)
+theta.hat[2] <- mean(fg)
+se[2] <- sd(fg)
+x <- rcauchy(m) # using f2
+i <- c(which(x > 1), which(x < 0))
+x[i] <- 2 # to catch overflow errors in g(x)
+fg <- g(x) / dcauchy(x)
+theta.hat[3] <- mean(fg)
+se[3] <- sd(fg)
+u <- runif(m) # f3, inverse transform method
+x <- - log(1 - u * (1 - exp(-1)))
+fg <- g(x) / (exp(-x) / (1 - exp(-1)))
+theta.hat[4] <- mean(fg)
+se[4] <- sd(fg)
+u <- runif(m) # f4, inverse transform method
+x <- tan(pi * u / 4)
+fg <- g(x) / (4 / ((1 + x^2) * pi))
+theta.hat[5] <- mean(fg)
+se[5] <- sd(fg)
+
+
+F.inv <- function(x){
+  (1-exp(-x))/(1-exp(-1))
+}
+a <- c(0,F.inv(0.2),F.inv(0.4),F.inv(0.6),F.inv(0.8),1)
+
+M <- 20 # number of replicates
+T2 <- numeric(5)
+estimates <- matrix(0, 10, 2)
+g <- function(x) {
+  exp(-x - log(1+x^2)) * (x > 0) * (x < 1) 
+}
+for (i in 1:10) {
+  estimates[i, 1] <- mean(g(runif(M)))
+  for (jj in 1:5){
+    u <- runif(m) # f3, inverse transform method
+    x <- - log(exp(-a[jj]) - u * (1 - exp(-1)) / 5)
+    fg <- g(x) / (5*exp(-x) / (1 - exp(-1)))
+    T2[jj] <- mean(fg)
+  }
+  estimates[i, 2] <- mean(T2)
+}
+
+# print(rbind(theta.hat, se))
+```
+
+
+### Std. Error

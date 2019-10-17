@@ -450,6 +450,77 @@ print(round(cbind(sdMC1, sdMC2, Reduction), 5))</code></pre>
 </div>
 <div id="answer-3" class="section level2">
 <h2>Answer 3</h2>
+<div id="estimation" class="section level3">
+<h3>Estimation</h3>
+<p>We divide the interval <span class="math inline">\((0,1)\)</span> into five subintervals, <span class="math inline">\((a_j, a_{j+1}), j = 0, 1, . . . , 4\)</span> where <span class="math inline">\(a_i\)</span> is <span class="math inline">\(F^{-1}(j/5),\;j=1,2,3,4\)</span>, <span class="math inline">\(a_0=1-a_5=0\)</span>, <span class="math inline">\(F(x) = \frac{1-e^{-x}}{1-e^{-1}}\)</span>. Then on the <span class="math inline">\(j\)</span>th subinterval variables are generated from the density <span class="math display">\[\begin{equation}
+  \frac{5e^{-x}}{1-e^{-1}},\quad\quad a_{j}&lt;x&lt;a_{j+1}
+\end{equation}\]</span></p>
+<p>The integrand is <span class="math display">\[\begin{equation}
+  g(x) = \left\{
+  \begin{split}
+    e^{-x}/(1+x^2),&amp; \text{ if }(0&lt;x&lt;1); \\
+    0,\quad\quad\quad\quad\quad &amp; \text{ otherwise}.
+  \end{split}
+  \right.
+\end{equation}\]</span></p>
+<pre class="r"><code>m &lt;- 10000
+theta.hat &lt;- se &lt;- numeric(6)
+g &lt;- function(x) {
+  exp(-x - log(1+x^2)) * (x &gt; 0) * (x &lt; 1)
+}
+x &lt;- runif(m) # using f0
+fg &lt;- g(x)
+theta.hat[1] &lt;- mean(fg)
+se[1] &lt;- sd(fg)
+x &lt;- rexp(m, 1) # using f1
+fg &lt;- g(x) / exp(-x)
+theta.hat[2] &lt;- mean(fg)
+se[2] &lt;- sd(fg)
+x &lt;- rcauchy(m) # using f2
+i &lt;- c(which(x &gt; 1), which(x &lt; 0))
+x[i] &lt;- 2 # to catch overflow errors in g(x)
+fg &lt;- g(x) / dcauchy(x)
+theta.hat[3] &lt;- mean(fg)
+se[3] &lt;- sd(fg)
+u &lt;- runif(m) # f3, inverse transform method
+x &lt;- - log(1 - u * (1 - exp(-1)))
+fg &lt;- g(x) / (exp(-x) / (1 - exp(-1)))
+theta.hat[4] &lt;- mean(fg)
+se[4] &lt;- sd(fg)
+u &lt;- runif(m) # f4, inverse transform method
+x &lt;- tan(pi * u / 4)
+fg &lt;- g(x) / (4 / ((1 + x^2) * pi))
+theta.hat[5] &lt;- mean(fg)
+se[5] &lt;- sd(fg)
+
+
+F.inv &lt;- function(x){
+  (1-exp(-x))/(1-exp(-1))
+}
+a &lt;- c(0,F.inv(0.2),F.inv(0.4),F.inv(0.6),F.inv(0.8),1)
+
+M &lt;- 20 # number of replicates
+T2 &lt;- numeric(5)
+estimates &lt;- matrix(0, 10, 2)
+g &lt;- function(x) {
+  exp(-x - log(1+x^2)) * (x &gt; 0) * (x &lt; 1) 
+}
+for (i in 1:10) {
+  estimates[i, 1] &lt;- mean(g(runif(M)))
+  for (jj in 1:5){
+    u &lt;- runif(m) # f3, inverse transform method
+    x &lt;- - log(exp(-a[jj]) - u * (1 - exp(-1)) / 5)
+    fg &lt;- g(x) / (5*exp(-x) / (1 - exp(-1)))
+    T2[jj] &lt;- mean(fg)
+  }
+  estimates[i, 2] &lt;- mean(T2)
+}
+
+# print(rbind(theta.hat, se))</code></pre>
+</div>
+<div id="std.-error" class="section level3">
+<h3>Std. Error</h3>
+</div>
 </div>
 
 

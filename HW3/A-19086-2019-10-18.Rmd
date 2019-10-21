@@ -1,0 +1,28 @@
+---
+title: "Homework 3"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1111)
+```
+
+## Question 1 (6.5)
+Suppose a $95\%$ symmetric t-interval is applied to estimate a mean, but the sample data are non-normal. 
+Then the probability that the confidence interval covers the mean is not necessarily equal to $0.95$. 
+Use a Monte Carlo experiment to estimate the coverage probability of the t-interval for random samples of $\chi^2(2)$ data with sample size $n = 20$. 
+Compare your $t$-interval results with the simulation results in Example 6.4. 
+(The t-interval should be more robust to departures from normality than the interval for variance.) 
+
+## Question 2 (6.6)
+Estimate the $0.025, 0.05, 0.95$, and $0.975$ quantiles of the skewness \sqrt{b_1} under normality by a Monte Carlo experiment. 
+Compute the standard error of the estimates from (2.14) using the normal approximation for the density (with exact variance formula). 
+Compare the estimated quantiles with the quantiles of the large sample approximation $\sqrt{b_1} ≈ N(0, 6/n)$.
+
+## Answer 1
+
+
+## Answer 2

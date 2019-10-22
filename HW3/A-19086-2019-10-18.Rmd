@@ -20,9 +20,67 @@ Compare your $t$-interval results with the simulation results in Example 6.4.
 ## Question 2 (6.6)
 Estimate the $0.025, 0.05, 0.95$, and $0.975$ quantiles of the skewness \sqrt{b_1} under normality by a Monte Carlo experiment. 
 Compute the standard error of the estimates from (2.14) using the normal approximation for the density (with exact variance formula). 
-Compare the estimated quantiles with the quantiles of the large sample approximation $\sqrt{b_1} ≈ N(0, 6/n)$.
+Compare the estimated quantiles with the quantiles of the large sample approximation $\sqrt{b_1} \approx N(0, 6/n)$.
 
 ## Answer 1
+Firstly, we use a Monte Carlo experiment to estimate the coverage probability of the t-interval for random samples of $\chi^2(2)$ data with sample size $n=20$. 
+
+When we calculate the confidence intervals for one normally distributed population mean when population variance $\sigma^2$ is unknown, we use sample variance $s^2$ and obtain
+\begin{equation}
+  t = \frac{\bar{X} - \mu}{s/\sqrt{n}}
+\end{equation}
+which has the T-distribution with $n-1$ degrees of fredom, $t(n-1)$. 
+
+A two side $100(1-\alpha)\%$ confidence interval is given by
+\begin{equation}
+  (\bar{X} - t_{\alpha/2} \cdot \frac{s}{\sqrt{n}}, \bar{X} + t_{\alpha/2} \cdot \frac{s}{\sqrt{n}})
+\end{equation}
+where $t_{\alpha/2}$ is the $\alpha/2$-quantile of the $t(n − 1)$ distribution.
+
+```{r t-interval}
+set.seed(111)
+m <- 1000     # repeat
+n <- 20       # sample size
+alpha <- .05  # true confidence level
+
+calcCI <- function(n, alpha) {
+  y <- rchisq(n, df = 2)  # chi-square distribution
+  return(c(mean(y),  sqrt(var(y)) * qt(alpha/2, df = n-1) / sqrt(n)))
+}
+
+UCL <- replicate(m, expr = calcCI(n = n, alpha = alpha))
+
+X_bar <- UCL[1,]
+X_bias <- UCL[2,]
+
+# compute the mean to get the confidence level
+num <- 0
+for (ii in 1:m) {
+  if ( (X_bar[ii]-X_bias[ii]) > 2 & (X_bar[ii]+X_bias[ii]) < 2)
+    num <- num + 1
+}
+cat("Empirical confidence level: ", num/m, "\n")
+```
+
+Then we use a Monte Carlo experiment to estimate the coverage probability for random samples of $\chi^2(2)$ data with sample size $n=20$ using method in Example 6.4.
+
+```{r example6.4}
+set.seed(111)
+m <- 1000     # repeat
+n <- 20       # sample size
+alpha <- .05  # true confidence level
+
+calcCI <- function(n, alpha) {
+  y <- rchisq(n, df = 2)  # chi-square distribution
+  return((n-1) * var(y) / qchisq(alpha, df = n-1))
+}
+
+UCL <- replicate(m, expr = calcCI(n = n, alpha = alpha))
+
+# compute the mean to get the confidence level
+cat("Empirical confidence level: ", mean(UCL > 4), "\n")
+```
+Comparing my t-interval results with the simulation results in Example 6.4, we can find that the empirical confidence level of mine is much more precise than the result from Example 6.4. My result is close to the true level $1-alpha=95\%$. 
 
 
 ## Answer 2

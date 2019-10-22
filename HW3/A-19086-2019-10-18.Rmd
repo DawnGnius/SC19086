@@ -37,7 +37,7 @@ A two side $100(1-\alpha)\%$ confidence interval is given by
 \end{equation}
 where $t_{\alpha/2}$ is the $\alpha/2$-quantile of the $t(n − 1)$ distribution.
 
-```{r t-interval}
+```{r a3.1.1}
 set.seed(111)
 m <- 1000     # repeat
 n <- 20       # sample size
@@ -59,12 +59,12 @@ for (ii in 1:m) {
   if ( (X_bar[ii]-X_bias[ii]) > 2 & (X_bar[ii]+X_bias[ii]) < 2)
     num <- num + 1
 }
-cat("Empirical confidence level: ", num/m, "\n")
+cat("Empirical confidence level: ", 100*num/m, "%\n")
 ```
 
 Then we use a Monte Carlo experiment to estimate the coverage probability for random samples of $\chi^2(2)$ data with sample size $n=20$ using method in Example 6.4.
 
-```{r example6.4}
+```{r a3.1.2}
 set.seed(111)
 m <- 1000     # repeat
 n <- 20       # sample size
@@ -78,9 +78,95 @@ calcCI <- function(n, alpha) {
 UCL <- replicate(m, expr = calcCI(n = n, alpha = alpha))
 
 # compute the mean to get the confidence level
-cat("Empirical confidence level: ", mean(UCL > 4), "\n")
+cat("Empirical confidence level: ", 100*mean(UCL > 4), "%\n")
 ```
 Comparing my t-interval results with the simulation results in Example 6.4, we can find that the empirical confidence level of mine is much more precise than the result from Example 6.4. My result is close to the true level $1-alpha=95\%$. 
 
 
 ## Answer 2
+The sample coefficient of skewness is denoted by $\sqrt{b_1}$,
+\begin{equation}
+  \sqrt{b_{1}} = 
+    \frac{\frac{1}{n} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{3}}
+    {\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}\right)^{3 / 2}},
+\end{equation}
+which is asymptotically normal with mean $0$ and variance $6/n$ under normality assumption of $X$.
+
+Firstly, we can calculate the quantiles of the the skewness as following
+```{r a3.2.1}
+# set.seed(111)
+skewness <- function(x){
+  x_bar <- mean(x)
+  numerator <- mean((x-x_bar)^3)
+  denominator <- (mean((x-x_bar)^2))^1.5
+  return(numerator / denominator)
+}
+n <- 20
+m <- 1000
+mu <- 0
+sigma <- 1
+# generate samples
+stat <- replicate(m, expr={
+  x <- rnorm(n, mu, sigma)
+  skewness(x)
+})
+estimator <- quantile(stat, c(.025, .05, .95, .975))
+print(estimator)
+```
+The $0.025,0.05,0.95$, and $0.975$ quantiles of the skewness is shown above. 
+
+Secondly, we compute the standard error of the estimates by equation (2.4), which shows that
+\begin{equation}
+  \operatorname{Var}\left(\hat{x}_{q}\right)=\frac{q(1-q)}{n f\left(x_{q}\right)^{2}}.
+\end{equation}
+If $f$ is the density of normal distribution, we can obtain the exact variance 
+```{r a3.2.2}
+level <- c(.025, .05, .95, .975)
+se_xq <- sqrt(level*(1-level)/(n*(dnorm(level, mean=mu, sd=sigma)^2)))
+print(round(rbind(level,se_xq), digits=5))
+```
+
+Finally,  we compare the estimated quantiles with the quantiles of the large sample approximation.
+```{r a3.2.3}
+xq <- qnorm(level, mean=0, sd=sqrt(6/n))
+bound.upper <- estimator + 2*se_xq
+bound.lower <- estimator - 2*se_xq
+print(rbind(xq, estimator, bound.lower, bound.upper))
+```
+
+From the table, we can see that the estimators is approximate to the large sample approximation. The approximation $x_q$ is in the $2\sigma$ interval.
+
+If we have more samples, for example $n=200$ rather than $n=20$, we obtain a more precise result as following
+```{r a3.2.4, include=FALSE}
+# set.seed(111)
+skewness <- function(x){
+  x_bar <- mean(x)
+  numerator <- mean((x-x_bar)^3)
+  denominator <- (mean((x-x_bar)^2))^1.5
+  return(numerator / denominator)
+}
+n <- 200
+m <- 1000
+mu <- 0
+sigma <- 1
+# generate samples
+stat <- replicate(m, expr={
+  x <- rnorm(n, mu, sigma)
+  skewness(x)
+})
+estimator <- quantile(stat, c(.025, .05, .95, .975))
+# print(estimator)
+
+level <- c(.025, .05, .95, .975)
+se_xq <- sqrt(level*(1-level)/(n*(dnorm(level, mean=mu, sd=sigma)^2)))
+# print(round(rbind(level,se_xq), digits=5))
+
+xq <- qnorm(level, mean=0, sd=sqrt(6/n))
+bound.upper <- estimator + 2*se_xq
+bound.lower <- estimator - 2*se_xq
+# print(rbind(xq, estimator, bound.lower, bound.upper))
+```
+```{r a3.2.5}
+# n=200
+print(rbind(xq, estimator, bound.lower, bound.upper))
+```

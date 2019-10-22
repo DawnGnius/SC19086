@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="By 19086" />
@@ -256,9 +257,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -272,30 +271,90 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
 }
 </style>
 
 
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -305,8 +364,8 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Homework 3</h1>
-<h4 class="author"><em>By 19086</em></h4>
-<h4 class="date"><em>2019-10-22</em></h4>
+<h4 class="author">By 19086</h4>
+<h4 class="date">2019-10-22</h4>
 
 </div>
 
@@ -349,8 +408,8 @@ for (ii in 1:m) {
   if ( (X_bar[ii]-X_bias[ii]) &gt; 2 &amp; (X_bar[ii]+X_bias[ii]) &lt; 2)
     num &lt;- num + 1
 }
-cat(&quot;Empirical confidence level: &quot;, num/m, &quot;\n&quot;)</code></pre>
-<pre><code>## Empirical confidence level:  0.917</code></pre>
+cat(&quot;Empirical confidence level: &quot;, 100*num/m, &quot;%\n&quot;)</code></pre>
+<pre><code>## Empirical confidence level:  91.7 %</code></pre>
 <p>Then we use a Monte Carlo experiment to estimate the coverage probability for random samples of <span class="math inline">\(\chi^2(2)\)</span> data with sample size <span class="math inline">\(n=20\)</span> using method in Example 6.4.</p>
 <pre class="r"><code>set.seed(111)
 m &lt;- 1000     # repeat
@@ -365,12 +424,67 @@ calcCI &lt;- function(n, alpha) {
 UCL &lt;- replicate(m, expr = calcCI(n = n, alpha = alpha))
 
 # compute the mean to get the confidence level
-cat(&quot;Empirical confidence level: &quot;, mean(UCL &gt; 4), &quot;\n&quot;)</code></pre>
-<pre><code>## Empirical confidence level:  0.789</code></pre>
+cat(&quot;Empirical confidence level: &quot;, 100*mean(UCL &gt; 4), &quot;%\n&quot;)</code></pre>
+<pre><code>## Empirical confidence level:  78.9 %</code></pre>
 <p>Comparing my t-interval results with the simulation results in Example 6.4, we can find that the empirical confidence level of mine is much more precise than the result from Example 6.4. My result is close to the true level <span class="math inline">\(1-alpha=95\%\)</span>.</p>
 </div>
 <div id="answer-2" class="section level2">
 <h2>Answer 2</h2>
+<p>The sample coefficient of skewness is denoted by <span class="math inline">\(\sqrt{b_1}\)</span>, <span class="math display">\[\begin{equation}
+  \sqrt{b_{1}} = 
+    \frac{\frac{1}{n} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{3}}
+    {\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}\right)^{3 / 2}},
+\end{equation}\]</span> which is asymptotically normal with mean <span class="math inline">\(0\)</span> and variance <span class="math inline">\(6/n\)</span> under normality assumption of <span class="math inline">\(X\)</span>.</p>
+<p>Firstly, we can calculate the quantiles of the the skewness as following</p>
+<pre class="r"><code># set.seed(111)
+skewness &lt;- function(x){
+  x_bar &lt;- mean(x)
+  numerator &lt;- mean((x-x_bar)^3)
+  denominator &lt;- (mean((x-x_bar)^2))^1.5
+  return(numerator / denominator)
+}
+n &lt;- 20
+m &lt;- 1000
+mu &lt;- 0
+sigma &lt;- 1
+# generate samples
+stat &lt;- replicate(m, expr={
+  x &lt;- rnorm(n, mu, sigma)
+  skewness(x)
+})
+estimator &lt;- quantile(stat, c(.025, .05, .95, .975))
+print(estimator)</code></pre>
+<pre><code>##       2.5%         5%        95%      97.5% 
+## -0.9726206 -0.8332997  0.7969245  0.9632727</code></pre>
+<p>The <span class="math inline">\(0.025,0.05,0.95\)</span>, and <span class="math inline">\(0.975\)</span> quantiles of the skewness is shown above.</p>
+<p>Secondly, we compute the standard error of the estimates by equation (2.4), which shows that <span class="math display">\[\begin{equation}
+  \operatorname{Var}\left(\hat{x}_{q}\right)=\frac{q(1-q)}{n f\left(x_{q}\right)^{2}}.
+\end{equation}\]</span> If <span class="math inline">\(f\)</span> is the density of normal distribution, we can obtain the exact variance</p>
+<pre class="r"><code>level &lt;- c(.025, .05, .95, .975)
+se_xq &lt;- sqrt(level*(1-level)/(n*(dnorm(level, mean=mu, sd=sigma)^2)))
+print(round(rbind(level,se_xq), digits=5))</code></pre>
+<pre><code>##          [,1]    [,2]    [,3]    [,4]
+## level 0.02500 0.05000 0.95000 0.97500
+## se_xq 0.08754 0.12231 0.19182 0.14076</code></pre>
+<p>Finally, we compare the estimated quantiles with the quantiles of the large sample approximation.</p>
+<pre class="r"><code>xq &lt;- qnorm(level, mean=0, sd=sqrt(6/n))
+bound.upper &lt;- estimator + 2*se_xq
+bound.lower &lt;- estimator - 2*se_xq
+print(rbind(xq, estimator, bound.lower, bound.upper))</code></pre>
+<pre><code>##                   2.5%         5%       95%     97.5%
+## xq          -1.0735165 -0.9009234 0.9009234 1.0735165
+## estimator   -0.9726206 -0.8332997 0.7969245 0.9632727
+## bound.lower -1.1476911 -1.0779212 0.4132817 0.6817568
+## bound.upper -0.7975501 -0.5886783 1.1805674 1.2447885</code></pre>
+<p>From the table, we can see that the estimators is approximate to the large sample approximation. The approximation <span class="math inline">\(x_q\)</span> is in the <span class="math inline">\(2\sigma\)</span> interval.</p>
+<p>If we have more samples, for example <span class="math inline">\(n=200\)</span> rather than <span class="math inline">\(n=20\)</span>, we obtain a more precise result as following</p>
+<pre class="r"><code>n=200
+print(rbind(xq, estimator, bound.lower, bound.upper))</code></pre>
+<pre><code>##                   2.5%         5%       95%     97.5%
+## xq          -0.3394757 -0.2848970 0.2848970 0.3394757
+## estimator   -0.3342406 -0.2752108 0.2951861 0.3577090
+## bound.lower -0.3896027 -0.3525669 0.1738675 0.2686858
+## bound.upper -0.2788784 -0.1978547 0.4165046 0.4467321</code></pre>
 </div>
 
 
@@ -390,6 +504,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

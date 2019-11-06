@@ -1,0 +1,240 @@
+---
+title: "Homework 4"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('snowfall')
+library('ggplot2')
+library('tibble')
+```
+
+## Question 1 (Exercise 6.7)
+Estimate the power of the skewness test of normality against symmetric $Beta(\alpha, \alpha)$ distributions and comment on the results. 
+Are the results different for heavy-tailed symmetric alternatives such as $t(ν)$?
+
+
+## Answer 1
+
+The skewness $\sqrt{b_1}$ of a random variable $X$ is defined by
+\begin{equation}
+  \sqrt{b_{1}} = 
+    \frac{\frac{1}{n} \sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{3}}
+    {\left(\frac{1}{n}\sum_{i=1}^{n}\left(X_{i}-\bar{X}\right)^{2}\right)^{3 / 2}},
+\end{equation}
+which is asymptotically normal with mean $0$ and variance $6/n$ under normality assumption of $X$.
+
+The skewness test of normality is done with hypotheses
+\begin{equation}
+H_0: \sqrt{\beta_1} = 0 \Leftrightarrow  H_1: \sqrt{\beta_1} \neq 0 .
+\end{equation}
+where the sampling distribution of the skewness statistic is derived under the assumption of normality.
+
+Our goal is to estimate the power of the skewness test of normality against symmetric $Beta(\alpha, \alpha)$ distributions.
+We just need to generate data from $Beta(\alpha, \alpha)$ distributions with some different values of $\alpha$ and then put then into the test machine as described above.
+
+Let's focuse on the code
+```{r}
+set.seed(1111)
+n <- 30   # sample size
+m <- 2500  # reputation times
+
+# statistics function
+skewness <- function(x){
+  # input data x
+  # return statistics b1
+  x_bar <- mean(x)
+  numerator <- mean((x-x_bar)^3)
+  denominator <- (mean((x-x_bar)^2))^1.5
+  return(numerator / denominator)
+}
+
+# critical value for the skewness test at level=0.1
+cv <- qnorm(1-0.1/2, 0, sqrt(6*(n-2) / ((n+1)*(n+3))))
+
+# replicate the procedure with different parameter alpha
+pwr <- function(a){
+  stat <- replicate(m, expr={
+                    X <- rbeta(n, a, a)
+                    skewness(X) })
+  length(which(abs(stat) >= cv)) / m
+}
+
+# calculate power
+alpha <- seq(0, 40, length.out=81)[-1]
+powers <- unlist(base::lapply(X=alpha, FUN=pwr))
+
+# plot power vs alpha
+plot(alpha, powers, type = "b", xlab = bquote(alpha), ylab='Power', ylim = c(0,1))
+
+# plot test level line, horizon
+abline(h = .1, lty = 3)
+
+# add standard errors
+se <- sqrt(powers * (1-powers) / m) 
+lines(alpha, powers+se, lty = 3)
+lines(alpha, powers-se, lty = 3)
+```
+
+The power of the test procedure is really poor. 
+It can hardly reject the hypotheses under such a kind of data $Beta(\alpha,\alpha), \alpha=0.5,1,\cdots,40$. 
+
+To explain the result, I suppose when $\alpha$ is large, such as $20$, kurtosis is relatively large, which means the variance is small. At this time, $Beta(\alpha,\alpha)$ is similar with normal distribution.
+On the contrary, when $\alpha$ is small, the variance is relatively small, but it's very small actually. So it's impossible for the test machine to reject the null hypothesis.
+
+Now let's check the reusult of some other heavy-tailed symmetric alternatives such as $t(ν)$.
+
+Please see the code for detail.
+```{r}
+alpha <- seq(1, 40)
+# replicate the procedure with different parameter alpha
+pwr <- function(a){
+  stat <- replicate(m, expr={
+                    X <- rt(n, a)
+                    skewness(X)})
+  length(which(abs(stat) >= cv)) / m
+}
+powers <- unlist(base::lapply(X=alpha, FUN=pwr))
+
+# plot power vs alpha
+plot(alpha, powers, type = "b", xlab = 'Degree of Freedom', ylab='Power', ylim = c(0,1))
+
+# plot test level line, horizon
+abline(h = .1, lty = 3)
+
+# add standard errors
+se <- sqrt(powers * (1-powers) / m) 
+lines(alpha, powers+se, lty = 3)
+lines(alpha, powers-se, lty = 3)
+```
+
+We can see that the test procedure works well when the parameter of $t$ distribution, $df$, is relatively small. The power is about $0.9$ at the beginning, and it declines rapidly when $df$ becomes bigger. When the power is about $0.2$ and $df$ is about $8$, it slowed down the rate of decline and it slowly reduce to $0.1$, the level we selected, in the following process. 
+
+I suppoese that, it is because $t$ distribution is different from normal distribution when $df$ is small, but when $df$ is larger they are similar. 
+
+## Question 2 (Project 6.A)
+Use Monte Carlo simulation to investigate whether the empirical Type I error rate of the t-test is approximately equal to the nominal significance level $\alpha$, when the sampled population is non-normal. 
+(The t-test is robust to mild departures from normality. )
+
+Discuss the simulation results for the cases where the sampled population is 
+
+(i) $\chi^2(1)$, 
+
+(ii) $Uniform(0,2)$, 
+
+(iii) $Exponential(rate=1)$. 
+
+In each case, test $H_0 : \mu = \mu_0 \Leftrightarrow H_1 : \mu \neq \mu_0$, where $\mu_0$ is the mean of $\chi^2(1)$, $Uniform(0,2)$, and $Exponential(1)$, respectively.
+
+
+## Answer 2
+
+We follow the instruction to generate samples from $\chi^2(1)$, $Uniform(0,2)$, and $Exponential(1)$. And make Monte Carlo simulations to obtain p-values under $H_0:  \mu = 1$. And then calculate the reject rate to draw a figure. 
+```{r}
+set.seed(1111)
+n <- 30
+m <- 1000
+
+# calculate p-value under chi^2(1)
+pvalues.chi <- replicate(m, expr = {
+                        x <- rchisq(n, df=1)
+                        ttest <- t.test(x,
+                        alternative = "two.sided", mu = 1)
+                        ttest$p.value } )
+# calculate p-value under uniform(0,2)
+pvalues.uniform <- replicate(m, expr = {
+                        x <- runif(n, min=0, max=2)
+                        ttest <- t.test(x,
+                        alternative = "two.sided", mu = 1)
+                        ttest$p.value } )
+# calculate p-value under exp(1)
+pvalues.exp <- replicate(m, expr = {
+                        x <- rexp(n, rate=1)
+                        ttest <- t.test(x,
+                        alternative = "two.sided", mu = 1)
+                        ttest$p.value } )
+
+# calculate reject rate
+power.chi <- mean(pvalues.chi <= .05)
+power.uniform <- mean(pvalues.uniform <= .05)
+power.exp <- mean(pvalues.exp <= .05)
+```
+
+Now, let's draw the picture
+
+```{r, echo=FALSE}
+rate <- tibble(methods = c(bquote(chi^2(1)),bquote(unif(0,2)),bquote(exp(1))), power = c(power.chi, power.uniform, power.exp))
+rate$methods <- factor(rate$methods, levels = c(bquote(chi^2(1)),bquote(unif(0,2)),bquote(exp(1))))
+ggplot(rate, aes(x=methods, y=power)) +  geom_col(fill='Salmon') + geom_hline(yintercept=0.05) + xlab('Sampled Population') + ylab('Reject Rate') + ylim(c(0,1))
+```
+
+The red bars in the picture are reject rates of different method, the horizontal line is at the theoretical **Type I error rate** $0.05$.
+
+The picture shows the reject rates of different non-normal sampled population method. 
+Although those three samples are non-normal, we can still get a similar reject rate at about $0.05$ which is theoretical **Type I error rate** under normality assumption. 
+
+We can conclude that the t-test is robust to mild departures from normality. 
+
+
+
+## Discussion
+
+If we obtain the powers for two methods under a particular simulation setting with $10,000$ experiments: say, $0.651$ for one method and $0.676$ for another method. 
+Can we say the powers are different at $0.05$ level?
+
+1. What is the corresponding hypothesis test problem?
+
+2. What test should we use? (*Z-test*, *two-sample t-test*, *paired-t test* or *McNemar test*?)
+
+3. What information is needed to test your hypothesis?
+
+
+## Answer 3
+
+1. What is the corresponding hypothesis test problem?
+
+Denote $p_1$ and $p_2$ are powers of different method. 
+
+The hypothesis is 
+\begin{equation}
+  H_0: p_1 = p_2 \Leftrightarrow H_1: p_1 \neq p_2
+\end{equation}
+
+
+2. What test should we use? (*Z-test*, *two-sample t-test*, *paired-t test* or *McNemar test*?)
+
+- **Z-test** is a statistical test used to determine whether two population means are different when the variances are known and the sample size is large. Usually it is used when data size is large. 
+
+- **Two-sample t-test** is used when you want to compare two independent groups to see if their means are different with small data size. 
+
+- The **Paired Samples T Test** compares the means of two variables. It computes the difference between the two variables for each case, and tests to see if the average difference is significantly different from zero. Requirement: Both variables should be normally distributed.
+
+- **McNemar's test** is a nonparameter statistical test used on paired nominal data. It's used when you are intersted in finding a change in proportion for the paired data.
+
+We should not use *two-sample t-test*, *paired-t test* because they are under normality assumption with small sample size. 
+But we know *p-value* is by no means from normal distribution. Thus we may not obtain correct result. 
+
+And also, we cannot directly use *McNemar test* because we don't have paried data. If we have all details about 10000 experience, we can try it.
+
+Finally, because of large number of repetitions, $\hat{p}_i \leadsto N(p_i, \frac{p_i(1-p_i)}{10000})$ so we can try *two sample Z-test*. 
+But we cannot use *Z-test*, because we have two sample groups.
+
+3. What information is needed to test your hypothesis?
+
+If we use *McNemar test* we need know the following information. 
+
+- $a$: the number of rejecting method-1 but accepting method-2 at the same time.
+
+- $b$: the number of accepting method-1 but rejecting method-2 at the same time.
+
+The McNemar test formula is:
+
+\begin{equation}
+  T = \frac{(a-b)^2}{a+b}.
+\end{equation}
+We have $T \leadsto \chi^2(1)$.
+
+The critical value of $\chi^2(1)$ for $\alpha= 0.05$ is $3.84$. If $T>3.84$, then we can reject the null hypothesis and conclude that the powers are different $\alpha= 0.05$ level. 

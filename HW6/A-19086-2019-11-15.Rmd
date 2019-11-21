@@ -1,0 +1,127 @@
+---
+title: "Homework 6"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('snowfall')
+library('ggplot2')
+```
+
+## Question 1 (Exercise 7.8)
+Refer to Exercise 7.7. Obtain the jackknife estimates of bias and standard error of $\hat{\theta}$.
+
+#### Exercise 7.7
+Refer to Exercise 7.6. Efron and Tibshirani discuss the following example [84,Ch. 7]. 
+The five-dimensional scores data have a $5 \times 5$ covariance matrix \Sigma, with positive eigenvalues $\lambda_1 > \dots > \lambda_5$. 
+In principal components analysis, 
+\begin{equation}
+    \theta = \frac{\lambda_1}{\sum_{j=1}^5 \lambda_j}
+\end{equation}
+measures the proportion of variance explained by the first principal component. 
+Let $\hat{\lambda}_1 > \dots > \hat{\lambda}_5$ be the eigenvalues of $\hat{\Sigma}$, where $\hat{\Sigma}$ is the MLE of $\Sigma$. 
+Compute the sample estimate
+\begin{equation}
+    \hat{\theta} = \frac{\hat{\lambda_1}}{\sum_{j=1}^5 \hat{\lambda}_j}
+\end{equation}
+
+#### Exercise 7.6 
+Efron and Tibshirani discuss the **scor (bootstrap)** test score data on $88$ students who took examinations in five subjects [84, Table 7.1], [188, Table 1.2.1]. 
+The first two tests (mechanics, vectors) were closed book and the last three tests (algebra, analysis, statistics) were open book. 
+Each row of the data frame is a set of scores $(x_{i1}, . . . , x_{i5})$ for the $i^{th}$ student. 
+Use a panel display to display the scatter plots for each pair of test scores. 
+Compare the plot with the sample correlation matrix. 
+Obtain bootstrap estimates of the standard errors for each of the following estimates: $\hat{\rho}_{12} = \hat{\rho}(mec, vec)$ , $\hat{\rho}_{34} = \hat{\rho}(alg, ana)$, $\hat{\rho}_{35} = \hat{\rho}(alg, sta)$, $\hat{\rho}_{45} = \hat{\rho}(ana, sta)$.
+
+## Answer 1
+Given a sample consisting of n independent observations $x_1,\dots, x_n$ of a $p$-dimensional random vector $x in R^{p×1}$ (a $p×1$ column-vector).
+The maximum likelihood estimator of the covariance matrix is give by
+\begin{equation}
+  \hat{\Sigma} = \frac{1}{n} (x_i - \bar{x}) (x_i - \bar{x})^T.
+\end{equation}
+This can be obtained by $\frac{n-1}{n}cov(\cdot)$ in **r**.
+
+```{r}
+library('bootstrap')
+library('boot')
+set.seed(12345)
+
+scor <- force(scor)                        # Forces the evaluation of a function argument.
+n <- dim(scor)[1]
+p <- dim(scor)[2]
+
+fun.theta <- function(x, xdata) {
+  Sigma <- cov(xdata[x,]) * (n-1) / n      # mle of corvariance matrix
+  eig.value <- eigen(Sigma)$values
+  eig.value[1] / sum(eig.value)            # theta hat
+}
+
+obj <- jackknife(x=1:n, theta=fun.theta, xdata=scor)   # jackknife estimation, formate needs to be noticed. 
+print(round(c(values=obj$jack.values, bias=obj$jack.bias, se=obj$jack.se),3))
+print(round(c(bias=obj$jack.bias, se=obj$jack.se),3))
+```
+
+I printed the values of jackknife estimator at each step above, and we can conclude taht the jackknife estimates of bias and standard error of $\hat{\theta}$ are $0.001$ and $0.050$.
+
+## Question 2 (Exercise 7.10)
+In **Example 7.18**, leave-one-out ($n$-fold) cross validation was used to select the best fitting model. 
+Repeat the analysis replacing the Log-Log model with a **cubic polynomial model**. 
+Which of the four models is selected by the cross validation procedure? 
+Which model is selected according to maximum adjusted $R^2$?
+
+
+## Answer 2
+**Cubic polynomial model** can be implemented by function **poly** with $degree=3$, or simpily using *lm(y ~ x + I(x^2) + I(x^3))*.
+
+```{r}
+library(DAAG)
+data(ironslag); attach(ironslag)
+
+n <- length(magnetic)                  # in DAAG ironslag
+e1 <- e2 <- e3 <- e4 <- numeric(n)
+
+# for n-fold cross validation
+# fit models on leave-one-out samples
+for (k in 1:n) {
+  y <- magnetic[-k]
+  x <- chemical[-k]
+  
+  J1 <- lm(y ~ x)
+  yhat1 <- J1$coef[1] + J1$coef[2] * chemical[k]
+  e1[k] <- magnetic[k] - yhat1
+  
+  J2 <- lm(y ~ x + I(x^2))
+  yhat2 <- J2$coef[1] + J2$coef[2] * chemical[k] + J2$coef[3] * chemical[k]^2
+  e2[k] <- magnetic[k] - yhat2
+  
+  J3 <- lm(log(y) ~ x)
+  logyhat3 <- J3$coef[1] + J3$coef[2] * chemical[k]
+  yhat3 <- exp(logyhat3)
+  e3[k] <- magnetic[k] - yhat3
+  
+  J4 <- lm(y ~ x + I(x^2) + I(x^3))
+  yhat4 <- J4$coef[1] + J4$coef[2] * chemical[k] + J4$coef[3] * chemical[k]^2 + J4$coef[4] * chemical[k]^3
+  e4[k] <- magnetic[k] - yhat4
+}
+
+# prediction error criterion
+print(round(c(linear=mean(e1^2), quadrtic=mean(e2^2), exponential=mean(e3^2), cubic=mean(e4^2)), 3))
+```
+
+According to the prediction error criterion, Model 2, the **quadratic model**, would be the best fit for the data. 
+While Model 4, the **cubic** one, is alittle worse than Model 3 and better than linear and exponential models. 
+
+Next, we use **adjusted** $R^2$ to select model.
+
+```{r}
+M1 <- lm(magnetic ~ chemical)
+M2 <- lm(magnetic ~ chemical + I(chemical^2))
+M3 <- lm(log(magnetic) ~ chemical)
+M4 <- lm(magnetic ~ chemical + I(chemical^2) + I(chemical^3))
+print(round(c(linear=summary(M1)$adj.r.squared, quadrtic=summary(M2)$adj.r.squared, exponential=summary(M3)$adj.r.squared, cubic=summary(M4)$adj.r.squared),3))
+```
+
+According to the **adjusted** $R^2$ criterion, Model 2, the **quadratic model**, would be the best fit for the data. 

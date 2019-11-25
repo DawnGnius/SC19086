@@ -37,7 +37,7 @@ Compare the plot with the sample correlation matrix.
 Obtain bootstrap estimates of the standard errors for each of the following estimates: $\hat{\rho}_{12} = \hat{\rho}(mec, vec)$ , $\hat{\rho}_{34} = \hat{\rho}(alg, ana)$, $\hat{\rho}_{35} = \hat{\rho}(alg, sta)$, $\hat{\rho}_{45} = \hat{\rho}(ana, sta)$.
 
 ## Answer 1
-Given a sample consisting of n independent observations $x_1,\dots, x_n$ of a $p$-dimensional random vector $x in R^{p×1}$ (a $p×1$ column-vector).
+Given a sample consisting of n independent observations $x_1,\dots, x_n$ of a $p$-dimensional random vector $x \in R^{p×1}$ (a $p×1$ column-vector).
 The maximum likelihood estimator of the covariance matrix is give by
 \begin{equation}
   \hat{\Sigma} = \frac{1}{n} (x_i - \bar{x}) (x_i - \bar{x})^T.
@@ -114,14 +114,15 @@ print(round(c(linear=mean(e1^2), quadrtic=mean(e2^2), exponential=mean(e3^2), cu
 According to the prediction error criterion, Model 2, the **quadratic model**, would be the best fit for the data. 
 While Model 4, the **cubic** one, is alittle worse than Model 3 and better than linear and exponential models. 
 
-Next, we use **adjusted** $R^2$ to select model.
+Next, we use **adjusted** $R^2$ to select model. We can use **summary()** function at a linear model objection to get adjusted $R^2$ as following. 
 
 ```{r}
 M1 <- lm(magnetic ~ chemical)
 M2 <- lm(magnetic ~ chemical + I(chemical^2))
 M3 <- lm(log(magnetic) ~ chemical)
 M4 <- lm(magnetic ~ chemical + I(chemical^2) + I(chemical^3))
-print(round(c(linear=summary(M1)$adj.r.squared, quadrtic=summary(M2)$adj.r.squared, exponential=summary(M3)$adj.r.squared, cubic=summary(M4)$adj.r.squared),3))
+print(round(c(linear=summary(M1)$adj.r.squared, quadrtic=summary(M2)$adj.r.squared, 
+              exponential=summary(M3)$adj.r.squared, cubic=summary(M4)$adj.r.squared),3))
 ```
 
 According to the **adjusted** $R^2$ criterion, Model 2, the **quadratic model**, would be the best fit for the data. 

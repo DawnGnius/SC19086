@@ -1,0 +1,219 @@
+---
+title: "Homework 7"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(snowfall)
+set.seed(1111)
+```
+
+## Question 1 (8.3)
+The Count $5$ test for equal variances in Section 6.4 is based on the maximum number of extreme points. 
+Example 6.15 shows that the Count $5$ criterion is not applicable for unequal sample sizes. 
+Implement a permutation test for equal variance based on the maximum number of extreme points that applies when sample sizes are not necessarily equal.
+
+## Answer 1
+
+```{r}
+set.seed(12345)
+
+# data preparation, setting 1
+n1 <- 20; n2 <- 30; n <- n1 + n2          # n1 neq n2
+mu1 <- mu2 <- 0                           # same mu and sigma
+sigma1 <- sigma2 <- 1
+x <- rnorm(n1, mu1, sigma1)
+y <- rnorm(n2, mu2, sigma2)
+
+count5.statistic <- function(x, y) {
+  # return statistic, the number of outs
+  X <- x - mean(x)    # centered by sample mean
+  Y <- y - mean(y)
+  outx <- sum(X > max(Y)) + sum(X < min(Y))
+  outy <- sum(Y > max(X)) + sum(Y < min(X))
+  return(max(c(outx, outy)))
+}
+
+count5.test.permutation <- function(x, y){
+  z <- c(x, y)
+  reps1 <- count5.statistic(x, y)           # statistics using all samples
+  R <- 1000; reps <- numeric(R)             # permutation to get statistics
+  for (i in 1:R) {
+    k <- sample(1:n, size = n1, replace = FALSE)
+    x1 <- z[k]; y1 <- z[-k] # complement of x1
+    reps[i] <- count5.statistic(x1, y1)
+  }
+  reps2 <- mean(abs(c(reps1, reps)) >= abs(reps1)) # Get achieved significance level (ASL)
+  
+  # print the result
+  cat("ASL: ", reps2)
+  
+  # draw histogram
+  hist(reps, main = "", freq = FALSE, xlab = "", xlim=c(1,13))
+  points(reps1, 0, cex = 1, pch = 16, col=2, lwd=8)
+  return(reps2)                             # ASL
+}
+
+# implement
+asl <- count5.test.permutation(x, y)
+```
+
+The approximate achieved significance level (ASL) `r round(asl,3)` does not support the null hypothesis that their variances are the same.  
+So we may say that variances of sample $x$ and $y$ may differ in this setting. 
+
+Let's try a example that $x$ and $y$ have different variances.
+
+```{r}
+# data preparation, setting 1
+n1 <- 30; n2 <- 40; n <- n1 + n2          # n1 neq n2
+mu1 <- 1; mu2 <- 0                        # mu
+sigma1 <- 1; sigma2 <- 2                  # different sig
+x <- rnorm(n1, mu1, sigma1)
+y <- rnorm(n2, mu2, sigma2)
+
+# implement
+asl <- count5.test.permutation(x, y)
+```
+
+The approximate achieved significance level (ASL) `r round(asl,3)` rejects the alternative hypothesis that their variances differ. 
+So we may say that variances of sample $x$ and $y$ may be similar in this setting. 
+
+
+## Question 2 (Permutation Slide P.31.)
+Power comparison (distance correlation test versus ball covariance test)
+
+* Model 1: $Y = X/4 + e$
+
+* Model 2: $Y = X/4 \times e$
+
+* $X \sim N(0_2, I_2)$, $e \sim N(0_2, I_2)$, $X$ and $e$ are independent.
+
+## Answer 2
+
+The following code is basic test functions to be used later. Those codes are copy from permutation slides.
+```{r, warning=FALSE}
+library(Ball); library(MASS); library(boot); library(snowfall)
+set.seed(12345)
+
+# permutation test for distance correlation
+dCov <- function(x, y) {
+  x <- as.matrix(x); y <- as.matrix(y)
+  n <- nrow(x); m <- nrow(y)
+  if (n != m || n < 2) 
+    stop("Sample sizes must agree")
+  if (! (all(is.finite(c(x, y)))))
+    stop("Data contains missing or infinite values")
+  
+  Akl <- function(x) {
+    d <- as.matrix(dist(x))
+    m <- rowMeans(d); M <- mean(d)
+    a <- sweep(d, 1, m); b <- sweep(a, 2, m)
+    b + M
+  }
+  
+  A <- Akl(x); B <- Akl(y)
+  sqrt(mean(A * B))
+}
+
+ndCov2 <- function(z, ix, dims) {
+  # dims contains dimensions of x and y
+  p <- dims[1]
+  q <- dims[2]
+  d <- p + q
+  x <- z[ , 1:p]     # leave x as is
+  y <- z[ix, -(1:p)] # permute rows of y
+  return(nrow(z) * dCov(x, y)^2)
+}
+```
+
+Now, let's focus on model 1, test the difference of distributions of $X$ and $Y$. 
+```{r, message=FALSE, warning=FALSE}
+# model 1
+myfun <- function(ii){
+  mu <- c(0, 0)
+  set.seed(ii)
+  Sigma <- diag(c(1,1))
+  X <- MASS::mvrnorm(n=n, mu=mu, Sigma=Sigma)
+  e <- MASS::mvrnorm(n=n, mu=mu, Sigma=Sigma)
+  Y = X/4 + e
+  z <- cbind(X, Y)
+  
+  boot.obj <- boot::boot(data=z, statistic=ndCov2, R=999, sim="permutation", dims=c(2, 2))
+  tb <- c(boot.obj$t0, boot.obj$t)
+  p.cor <- mean(tb >= tb[1])
+  p.ball <- bcov.test(z[,1:2], z[,3:4])$p.value
+  return(as.numeric(c(p.cor, p.ball)))
+}
+
+length.out <- 50; from <- 15; to <- 100
+pow.cor <- numeric(length.out); pow.ball <- numeric(length.out)
+m <- 1000
+
+ii <- 1
+snowfall::sfInit(parallel =TRUE, cpus=50)
+snowfall::sfExport("dCov", "ndCov2")
+snowfall::sfLibrary(Ball)
+for(n in as.integer(seq(from, to, length.out=length.out))){
+  snowfall::sfExport("n", "m")
+  res <- unlist(snowfall::sfLapply(x=1:m, fun=myfun))    # repeat m times
+  p.cor <- res[2*(1:m)-1]
+  p.ball <- res[2*(1:m)]
+  alpha <- 0.1
+  pow.cor[ii] <- mean(p.cor < alpha)
+  pow.ball[ii] <- mean(p.ball < alpha)
+  ii <- ii + 1
+}
+snowfall::sfStop()
+
+plot(x=as.integer(seq(from, to, length.out=length.out)), y=pow.cor, "l", lty=1, col=1)
+lines(x=as.integer(seq(from, to, length.out=length.out)), y=pow.ball, col=2)
+```
+
+Black line is the power of distance correlation test by number of samples, red line is the of ball covariance test.
+
+The following is model 2.
+```{r, message=FALSE, warning=FALSE}
+myfun <- function(ii){
+  mu <- c(0, 0)
+  Sigma <- diag(c(1,1))
+  set.seed(ii)
+  X <- MASS::mvrnorm(n=n, mu=mu, Sigma=Sigma)
+  e <- MASS::mvrnorm(n=n, mu=mu, Sigma=Sigma)
+  Y = X/4 * e
+  z <- cbind(X, Y)
+  
+  boot.obj <- boot::boot(data=z, statistic=ndCov2, R=999, sim="permutation", dims=c(2, 2))
+  tb <- c(boot.obj$t0, boot.obj$t)
+  p.cor <- mean(tb >= tb[1])
+  p.ball <- bcov.test(z[,1:2], z[,3:4], R=999)$p.value
+  return(as.numeric(c(p.cor, p.ball)))
+}
+
+length.out <- 50; from <- 15; to <- 100
+pow.cor <- numeric(length.out); pow.ball <- numeric(length.out)
+m <- 1000
+
+ii <- 1
+snowfall::sfInit(parallel =TRUE, cpus=50)
+snowfall::sfExport("dCov", "ndCov2")
+snowfall::sfLibrary(Ball)
+for(n in as.integer(seq(from, to, length.out=length.out))){
+  snowfall::sfExport("n", "m")
+  res <- unlist(snowfall::sfLapply(x=1:m, fun=myfun))
+  
+  p.cor <- res[2*(1:m)-1]
+  p.ball <- res[2*(1:m)]
+  alpha <- 0.1
+  pow.cor[ii] <- mean(p.cor < alpha)
+  pow.ball[ii] <- mean(p.ball < alpha)
+  ii <- ii + 1
+}
+snowfall::sfStop()
+plot(x=as.integer(seq(from, to, length.out=length.out)), y=pow.cor, "l", lty=1, col=1)
+lines(x=as.integer(seq(from, to, length.out=length.out)), y=pow.ball, col=2)
+```
+
+We can compare the power of distance correlation test versus ball covariance test clearly. Their power are both good, but distance correlation test performs better when location of samples are different, while ball covariance test perform better when their scale are different.

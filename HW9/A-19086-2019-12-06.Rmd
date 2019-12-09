@@ -1,0 +1,95 @@
+---
+title: "Homework 8"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    # css: style.css
+
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+library(snowfall)
+set.seed(1111)
+```
+
+## Question 1 (Exercises 11.1)
+
+The natural logarithm and exponential functions are inverses of each other, so that mathematically $log(exp x) = exp(log x) = x$. 
+Show by example that this property does not hold exactly in computer arithmetic. 
+Does the identity hold with near equality? (See all.equal.)
+
+## Solution 1
+R provides the function *all.equal* to check for near equality of two *R* objects.
+In a logical expression, use *isTRUE* to obtain a logical value. 
+
+Firstly, we can code as following
+```{r}
+n <- 100
+x <- seq(0.1, 2, length.out=n)
+alpha <- unlist(base::lapply(x, function(x) ifelse(log(exp(x)) == exp(log(x)), 1, 0)))
+cat("Ratio of equalities", sum(alpha)/n)
+```
+
+It means that there are about `r 100-sum(alpha)`\% $x$'s do not support $log(exp x) = exp(log x) = x$ in computer arithmetic. 
+
+Secondly, 
+```{r}
+n <- 100
+x <- seq(0.1, 2, length.out=n)
+alpha <- unlist(base::lapply(x, function(x) ifelse(isTRUE(all.equal(log(exp(x)), exp(log(x)))), 1, 0)))
+cat("Ratio of equalities", sum(alpha)/n)
+```
+We can see that the identity hold with near equality. 
+
+
+## Question 2 (Exercises 11.5)
+Write a function to solve the equation
+\begin{equation}
+  \frac{2 \Gamma\left(\frac{k}{2}\right)}{\sqrt{\pi(k-1)} \Gamma\left(\frac{k-1}{2}\right)} 
+  \int_{0}^{c_{k-1}}\left(1+\frac{u^{2}}{k-1}\right)^{-k / 2} d u 
+  = 
+  \frac{2 \Gamma\left(\frac{k+1}{2}\right)}{\sqrt{\pi k} \Gamma\left(\frac{k}{2}\right)} 
+  \int_{0}^{c_{k}}\left(1+\frac{u^{2}}{k}\right)^{-(k+1) / 2} d u 
+\end{equation}
+for $a$, where 
+\begin{equation}
+  c_{k}=\sqrt{\frac{a^{2} k}{k+1-a^{2}}}
+\end{equation}
+Compare the solutions with the points $A(k)$ in Exercise 11.4
+
+### Exercise 11.4
+Find the intersection points $A(k)$ in $(0, \sqrt{k})$ of the curves
+\begin{equation}
+  S_{k-1}(a) = P\left(t(k-1)>\sqrt{\frac{a^{2}(k-1)}{k-a^{2}}}\right)
+\end{equation}
+and
+\begin{equation}
+  S_{k}(a) = P\left(t(k)>\sqrt{\frac{a^{2} k}{k+1-a^{2}}}\right)
+\end{equation}
+for $k = 4 : 25, 100, 500, 1000$, where $t(k)$ is a Student $t$ random variable with $k$ degrees of freedom. 
+(These intersection points determine the critical values for a $t$-test for scale-mixture errors proposed by Szekely [260].)
+
+
+
+## Question 3 (A-B-O blood type problem)
+
+Let the three alleles be A, B, and O with allele frequencies $p$, $q$, and $r$. 
+The $6$ genotype frequencies under HWE and complete counts are as follows.
+
+Genotype   | AA       |   BB     | OO       |  AO      | BO       | AB       |  Sum   |
+-          | :-:      |  :-:     | :-:      | --:      | :-:      | :-:      | -:     |
+Frequency  | $p^2$    | $q^2$    | $r^2$    | $2pr$    | $2qr$    | $2pq$    |  $1$   |
+Count      | $n_{AA}$ | $n_{BB}$ | $n_{OO}$ | $n_{AO}$ | $n_{BO}$ | $n_{AB}$ |  $n$   |
+
+Observed data: $n_{A\cdot} = n_{AA} + n_{AO} = 28$ (A-type), $n_{B·} = n_{BB} + n_{BO} = 24$ (B-type), $n_{OO} = 41$ (O-type), $n_{AB} = 70$ (AB-type).
+
+1. Use EM algorithm to solve MLE of $p$ and $q$ (consider missing data $n_{AA}$ and $n_{BB}$). 
+
+2. Show that the log-maximum likelihood values in M-steps are increasing via line plot.
+
+
+## Answer 1
+

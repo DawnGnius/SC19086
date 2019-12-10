@@ -1,5 +1,5 @@
 ---
-title: "Homework 8"
+title: "Homework 9"
 author: "By 19086"
 date: "`r Sys.Date()`"
 output: 
@@ -25,7 +25,7 @@ Does the identity hold with near equality? (See all.equal.)
 R provides the function *all.equal* to check for near equality of two *R* objects.
 In a logical expression, use *isTRUE* to obtain a logical value. 
 
-Firstly, we can code as following
+Firstly, we can generate $100$ sample points from $[0.1, 2]$ uniformly, and check the identity. 
 ```{r}
 n <- 100
 x <- seq(0.1, 2, length.out=n)
@@ -73,6 +73,86 @@ for $k = 4 : 25, 100, 500, 1000$, where $t(k)$ is a Student $t$ random variable 
 (These intersection points determine the critical values for a $t$-test for scale-mixture errors proposed by Szekely [260].)
 
 
+## Solution 2
+
+The equation contains integration calculation and ratio of large gamma function. 
+
+I will use *integrate* function to calculate the integration as following
+```{r, eval=FALSE}
+# this is integrate function
+myfun <- function(u, k){
+  (1 + u^2/k)^(-(k+1) / 2)
+}
+integrate(myfun, lower=0, upper=ck, k=k)
+```
+And use *lgamma* to calculate the ratio of large gamma function
+\begin{equation}
+  \frac{\Gamma\left(\frac{k+1}{2}\right)}{\Gamma\left(\frac{k}{2}\right)}
+\end{equation}
+```{r, eval=FALSE}
+exp(lgamma((k+1)/2) - lgamma(k/2))
+```
+To see how the result depends on $k$ and find the root of the equation, we can write the follwoing code using *uniroot* function.
+```{r}
+k.loop <- c(4:25, 100, 500, 1000)
+
+myfun1 <- function(a, k.cur){
+  ck_1 <- sqrt(a^2 * (k.cur-1) / (k.cur - a^2))
+  ck <- sqrt(a^2 * k.cur / (k.cur + 1- a^2))
+  fun.left <- 2 * exp(lgamma(k.cur/2) - lgamma((k.cur-1)/2)) / sqrt(pi * (k.cur-1)) * integrate(function(u, k) (1 + u^2/k)^(-(k+1) / 2), lower=0, upper=ck_1, k=k.cur-1)$value
+  fun.right <- 2 * exp(lgamma((k.cur+1)/2) - lgamma(k.cur/2)) / sqrt(pi * k.cur) * integrate(function(u, k) (1 + u^2/k)^(-(k+1) / 2), lower=0, upper=ck, k=k.cur)$value
+  fun.left - fun.right
+}
+
+# Record result 1
+out1 <- numeric(length(k.loop))
+ii <- 1
+for (k in k.loop) {
+  if (k>25){
+    out1[ii] <- uniroot(myfun1, lower=0.01, upper=sqrt(k-1), k.cur=k)$root
+  } else {
+    out1[ii] <- uniroot(myfun1, lower=0.01*sqrt(k-1), upper=0.99*sqrt(k-1), k.cur=k)$root
+  }
+  
+  ii <- ii + 1
+}
+```
+
+
+
+Next, we compare the result with Exercise 11.4. 
+```{r}
+intersection <- function (k) {
+  s.k.minus.one <- function (a) {
+    1-pt(sqrt(a^2 * (k - 1) / (k - a^2)), df = k-1)
+  } #the function of S_{k-1}(a)
+  s.k <- function (a) {
+    1-pt(sqrt(a^2 * k / (k + 1 - a^2)), df = k)
+  } #the function of S_{k}(a)
+  f <- function (a) {
+    s.k(a) - s.k.minus.one(a)
+  } #the root of f is the intersection points
+  
+  eps <- .Machine$double.eps^0.5 
+  return(uniroot(f, interval = c(eps, sqrt(k)-eps))$root) #find the intersection points A(k) in (0,sqrt(k))
+}
+
+k <- c(4:25, 100, 500, 1000)
+out2 <- sapply(k, function (k) {
+  intersection(k)
+  })
+```
+
+Print the result
+```{r}
+out <- cbind(k=k, Method1=out1, Method2=out2)
+print(out)
+```
+
+We can find that method 1 is approximate to method 2 from Exercise 2 when $k\in \{4,\cdots, 25\}$. 
+But when $k$ is larger, the root from method 1 is wrong. 
+I check the value of $myfun1$, its value vibrates greatly rather than changes monotonically. This is due to the inaccurate calculation in *R*.
+
 
 ## Question 3 (A-B-O blood type problem)
 
@@ -80,7 +160,7 @@ Let the three alleles be A, B, and O with allele frequencies $p$, $q$, and $r$.
 The $6$ genotype frequencies under HWE and complete counts are as follows.
 
 Genotype   | AA       |   BB     | OO       |  AO      | BO       | AB       |  Sum   |
--          | :-:      |  :-:     | :-:      | --:      | :-:      | :-:      | -:     |
+-          | :-:      |  :-:     | :-:      | :--:     | :-:      | :-:      | -:     |
 Frequency  | $p^2$    | $q^2$    | $r^2$    | $2pr$    | $2qr$    | $2pq$    |  $1$   |
 Count      | $n_{AA}$ | $n_{BB}$ | $n_{OO}$ | $n_{AO}$ | $n_{BO}$ | $n_{AB}$ |  $n$   |
 
@@ -91,5 +171,98 @@ Observed data: $n_{A\cdot} = n_{AA} + n_{AO} = 28$ (A-type), $n_{B·} = n_{BB} +
 2. Show that the log-maximum likelihood values in M-steps are increasing via line plot.
 
 
-## Answer 1
+## Solution 3
 
+### Idea of EM
+
+The EM (Expectation Maximization) algorithm is a general optimization method that is often applied to find maximum likelihood estimates when data are incomplete.
+
+1. Start with an initial estimate of the target parameter, and then alternate the E (expectation) step and M (maximization) step.
+
+2. In the E step compute the conditional expectation of the objective function (usually a loglikelihood function) given the observed data and current parameter estimates.
+
+3. In the M step, the conditional expectation is maximized with respect to the target parameter.
+
+4. Update the estimates and iteratively repeat the E and M steps until the algorithm converges according to some criterion.
+
+Because of the observed data, we can rewrite the table as:
+
+| Genotype | Frequency   | Count             |
+| -:       |:-:          | :-                |
+|AA        |   $p^2$     |$n_{AA}$           |    
+|BB        |   $q^2$     |$n_{BB}$           |    
+|OO        |   $r^2$     |$n_{OO}=41$        |    
+|AO        |   $2pr$     |$n_{AO}=28-n_{AA}$ |            
+|BO        |   $2qr$     |$n_{BO}=24-n_{BB}$ |            
+|AB        |   $2pq$     |$n_{AB}=70$        |    
+|          |   $1$       |$n=163$            |
+
+We can write code as following.
+
+```{r}
+# Write the log-likelihood function
+lnL <- function(p, q, nA = 28, nB = 24, nOO = 41, nAB = 70) {
+  r = 1 - p - q
+  nA * log(p^2 + 2*p*r) + nB * log(q^2 + 2 * q * r) + 2 * nOO * log(r) + nAB * log(2 * p * q) 
+}
+
+# Write the E-M function
+EM <- function (p, q, nA = 28, nB = 24, nOO = 41, nAB = 70, debug = FALSE) {
+  
+  # Evaluate the likelihood using initial estimates
+  llk <- lnL(p, q, nA, nB, nOO, nAB)
+  
+  # Count the number of iterations so far
+  iter <- 1
+  # Vector for Record log-likelihood value
+  llk.rec <- numeric(0)
+  
+  # Loop until convergence 
+  while (TRUE)
+  {
+    # Estimate the frequency for allele O
+    r = 1 - p - q
+    
+    # Record llk
+    llk.rec <- c(llk.rec, llk)
+    
+    # First we carry out the E-step
+    
+    # The counts for genotypes O/O and A/B are effectively observed
+    # Estimate the counts for the other genotypes
+    nAA <- nA * p / (p + 2*r)
+    nAO <- nA - nAA
+    nBB <- nB * q / (q + 2*r)
+    nBO <- nB - nBB
+    
+    # Print debugging information
+    if (debug)
+    {
+      cat("Round #", iter, "lnLikelihood = ", llk, "\n")
+      cat("    Allele frequencies: p = ", p, ", q = ", q, ", r = ", r, "\n")
+      cat("    Genotype counts:    nAA = ", nAA, ", nAO = ", nAO, ", nBB = ", nBB, 
+          ", nBO = ", nBO, "\n")
+    }
+    
+    # Then the M-step
+    p <- (2 * nAA + nAO + nAB) / (2 * (nA + nB + nOO + nAB))
+    q <- (2 * nBB + nBO + nAB) / (2 * (nA + nB + nOO + nAB))
+    
+    # Then check for convergence 
+    llk1 <- lnL(p, q, nA, nB, nOO, nAB)
+    
+    if (abs(llk1 - llk) < (abs(llk) + abs(llk1)) * 1e-6) 
+      break       
+    
+    # Otherwise keep going
+    llk <- llk1
+    iter <- iter + 1
+  }
+  list(p = p, q = q, r=1-p-q, llk.rec=llk.rec)
+}
+
+# Set the initial estimate of the target parameters, then run the E-M function.
+out <- EM(0.3, 0.25, nA = 28, nB = 24, nOO = 41, nAB = 70, debug = TRUE) 
+cat("p=", out$p, "\tq=", out$q, "\tr=", out$r)
+plot(1:length(out$llk.rec), out$llk.rec, "l", xlab="Iter", ylab="Log-likelihood")
+```

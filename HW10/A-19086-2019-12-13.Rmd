@@ -1,0 +1,156 @@
+---
+title: "Homework 10"
+author: "By 19086"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    # css: style.css
+
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+library(snowfall)
+set.seed(1111)
+rm(list=ls())
+```
+
+
+## Question 1 (Exercises 11.1.2.3 from Adanced R)
+
+Use both for loops and **lapply()** to fit linear models to the **mtcars** using the formulas stored in this list:
+```{r}
+formulas <- list(
+  mpg ~ disp,
+  mpg ~ I(1 / disp),
+  mpg ~ disp + wt,
+  mpg ~ I(1 / disp) + wt
+)
+```
+
+## Solution 1
+
+Firstly,
+```{r}
+data("mtcars"); attach(mtcars)
+
+# using lapply
+res <- base::lapply(X=formulas, FUN=function(my.model) lm(my.model, data=mtcars))
+
+# print the models in list
+print(res)
+```
+
+
+## Question 2 (Exercises 11.1.2.4 from Adanced R)
+
+Fit the model **mpg ~ disp** to each of the bootstrap replicates of mtcars in the list below by using a for loop and **lapply()**. 
+Can you do it without an anonymous function? 
+
+```{r, eval=FALSE}
+bootstraps <- lapply(1:10, function(i) {
+  rows <- sample(1:nrow(mtcars), rep = TRUE)
+  mtcars[rows, ]
+})
+```
+
+## Solution 2
+
+Code is very simple and I implement it using for loop, lapply() with anonymous function and lappy() without anonymous function in the following. 
+These three method return three lists with 10 boostrap replicates named *my.lm*, *bootstraps1* and *bootstraps2* respectively. 
+
+It makes no sense to print them, if needed you can print them by yourself. 
+```{r}
+# For loop
+my.lm <- list()
+for(ii in 1:10){
+  rows <- sample(1:nrow(mtcars), rep = TRUE)
+  my.data <- mtcars[rows, ]
+  my.lm <- c(my.lm, list(lm(mpg ~ disp, data=my.data)))
+}
+
+# lapply() with anonymous function
+bootstraps1 <- lapply(1:10, function(i) {
+  rows <- sample(1:nrow(mtcars), rep = TRUE)
+  my.data <- mtcars[rows, ]
+  lm(mpg ~ disp, data=my.data)
+})
+
+# lapply() without anonymous function
+my.fit <- function(i) {
+  rows <- sample(1:nrow(mtcars), rep = TRUE)
+  my.data <- mtcars[rows, ]
+  lm(mpg ~ disp, data=my.data)
+}
+# lapply(bootstraps, lm, formula = mpg ~ disp)
+bootstraps2 <- lapply(1:10, my.fit)
+```
+
+## Question 3 (Exercises 11.1.2.5 from Adanced R)
+
+For each model in the previous two exercises, extract $R^2$ using the function below. 
+```{r}
+rsq <- function(mod) summary(mod)$r.squared
+```
+
+
+## Solution 3
+I print the $R^2$ one by one in the following.
+```{r}
+# Exercise 1
+unlist(lapply(res, rsq))
+
+# Exercise 2
+unlist(lapply(my.lm, rsq))        # for loop
+unlist(lapply(bootstraps1, rsq))  # lapply() with an anonymous function
+unlist(lapply(bootstraps1, rsq))  # lapply() without an anonymous function
+```
+
+
+## Question 4 (Exercises 11.2.5.3 from Adanced R)
+
+The following code simulates the performance of a t-test for non-normal data. 
+Use **sapply()** and an anonymous function to extract the p-value from every trial.
+```{r}
+trials <- replicate(
+  100,
+  t.test(rpois(10, 10), rpois(7, 10)),
+  simplify = FALSE
+)
+```
+Extra challenge: get rid of the anonymous function by using [[ directly.
+
+## Solution 4
+
+The following code extract the p-value from trails. 
+The second method is from Jingzhang in QQ Group.
+```{r}
+res1 <- sapply(1:100, function(ii) trials[[ii]]$p.value)
+
+res2 <- sapply(trials, '[[', 'p.value')
+
+head(cbind(method1=res1, method2=res2), 10) # omit 90 rows
+```
+
+
+## Question 5 (Exercises 11.2.5.7 from Adanced R)
+Implement **mcsapply()**, a multicore version of **sapply()**. 
+Can you implement **mcvapply()**, a parallel version of **vapply()**? 
+Why or why not? 
+
+## Solution 5
+Firstly, implement **mcsapply()**, a multicore version of **sapply()**. 
+We know that **sapply()** is a thin wrapper around **lapply()** that transforms a list into a vector in the final step. 
+So, **mcsapply()** could be implemented by extract result from **mclapply()** which is in parallel package already. 
+```{r, warning=FALSE, eval=FALSE}
+library(parallel)
+mcsapply <- function(X, FUN, ...){
+  unlist(parallel::mclapply(X, FUN, ...))
+}
+```
+
+Secondly, I think **mcsapply()** can not be implemented by extract result from **mclapply()**. 
+Because, simplification is always done in **vapply**, and this function checks that all values of FUN are compatible with the FUN.VALUE, in that they must have the same length and type. 
+Also, both **lapply** and **vapply** are primitive functions. 
+In concrete practice, they are very different. 

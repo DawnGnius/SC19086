@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # library(snowfall)
 set.seed(1111)
 ```
-## Questions (AR2)
+## Question AR2
 1. You have already written an R function for Exercise 9.4 (page
 277, Statistical Computing with R). Rewrite an Rcpp function
 for the same task.
@@ -34,7 +34,7 @@ For the increment, simulate from a normal distribution.
 Compare the chains generated when different variances are used for the proposal distribution. 
 Also, compute the acceptance rates of each chain.
 
-## Answer 1
+## Answer AR2
 
 Implement the random walk version of the Metropolis sampler to generate the target distribution standard Laplace $l$, using the proposal distribution $Normal(X_t, \sigma^2)$. 
 In order to see the effect of different choices of variance of the proposal distribution, try repeating the simulation with different choices of $\sigma$.
@@ -44,6 +44,7 @@ The standard Laplace distribution $l$ is $f(x)=\frac{1}{2}e^{-|x|} \propto e^{-|
   r(x_t, y) = \frac{f(Y)}{f(X_t)} = \frac{e^{-|y|}}{e^{-|x_t|}}
 \end{equation}
 
+### R version
 In this simulation below, the Laplace densities in $r(x_{i-1}, y)$ will be computed by *dlaplace* as following
 ```{r}
 dlaplace <- function(x) exp(-abs(x))
@@ -60,7 +61,7 @@ else
 ```
 
 These steps are combined into a function to generate the chain, given the parameters $n$ and $\sigma$, initial value $X_0$, and the length of the chain, $N$. 
-```{r}
+```{r, eval=FALSE}
 rw.Metropolis <- function(sigma, x0, N) {
   x <- numeric(N)
   x[1] <- x0
@@ -79,12 +80,41 @@ rw.Metropolis <- function(sigma, x0, N) {
 ```
 
 ### Rcpp version
-```{r, eval=FALSE}
 
+This is the cpp code. 
+
+Note that, NumericVector should to convert to a double using [0]. 
+```{c, eval=FALSE}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+List rw_Metropolis(double sigma, double x0, int N) {
+    NumericVector x(N);
+    x[0] = x0;
+    Function myrunif("runif");
+    Function myrnorm("rnorm");
+    NumericVector u = myrunif(Named("n") = N);
+    int k = 0;
+    for (int i=1; i<N; i++) {
+        NumericVector y = myrnorm(Named("n")=1, Named("mean")=x[i-1], Named("sd")=sigma);
+        if (u[i] <= (exp(abs(x[i-1]) - abs(y[0])))) {
+            x[i] = y[0];
+        } else {
+            x[i] = x[i-1];
+            k++;
+        }
+    }
+    return List::create(Named("x")=x, Named("k")=k);
+}
 ```
-Four chains are generated for different variances $\sigma^2$ of the proposal distribution. 
 
+This is r code, using rcpp to call the cpp code above.
 ```{r}
+library(Rcpp) # Attach R package "Rcpp"
+
+# Define function in rw_Metropolis.cpp
+sourceCpp("./rw_Metropolis.cpp")
+
 set.seed(12345)
 
 # data preparation, setting 1
@@ -92,15 +122,15 @@ N <- 2000
 sigma <- c(.05, .5, 2, 16)
 
 x0 <- 25
-rw1 <- rw.Metropolis(sigma[1], x0, N)
-rw2 <- rw.Metropolis(sigma[2], x0, N)
-rw3 <- rw.Metropolis(sigma[3], x0, N)
-rw4 <- rw.Metropolis(sigma[4], x0, N)
+rw1 <- rw_Metropolis(sigma[1], x0, N)
+rw2 <- rw_Metropolis(sigma[2], x0, N)
+rw3 <- rw_Metropolis(sigma[3], x0, N)
+rw4 <- rw_Metropolis(sigma[4], x0, N)
 
-# Rate of candidate points rejected
 cat(" Accept rate: \n", 1-c(rw1$k /N, rw2$k /N, rw3$k /N, rw4$k /N))
 ```
 
+Four chains are generated for different variances $\sigma^2$ of the proposal distribution. 
 
 ```{r, message=FALSE}
 library(rmutil)                       # for qlaplace

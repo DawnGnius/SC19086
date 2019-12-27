@@ -16,3 +16,15 @@ Read "Writing R Extensions" for more information.
 2. "Build" -- "install and restrat"
 
 3. rcpp function is achievable after 'library()'.
+
+## Install and Use
+
+```r
+# install
+library(devtools)
+devtools::install_github("DawnGnius/StatComp19086")
+
+# load
+library(StatComp19086)
+# we can use it.
+```

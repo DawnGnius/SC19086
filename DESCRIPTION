@@ -1,0 +1,11 @@
+Package: StatComp19086
+Type: Package
+Title: What the Package Does in One 'Title Case' Line
+Version: 1.0
+Date: 2019-12-20
+Author: 19086
+Maintainer: lhh <dawn.gnius@outlook.com>
+Description: This is a R package for Statistics Computation Course in fall 2019.
+License: GPL (>= 2)
+Imports: Rcpp (>= 1.0.3)
+LinkingTo: Rcpp

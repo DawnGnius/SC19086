@@ -1,17 +1,20 @@
-\name{rcpp_hello_world}
-\alias{rcpp_hello_world}
+\name{rw_Metropolis}
+\alias{rw_Metropolis}
 \docType{package}
 \title{
-Simple function using Rcpp
+Rcpp version of random walk Metropolis sampler
 }
 \description{
-Simple function using Rcpp
+Rcpp version of random walk Metropolis sampler for generating the standard Laplace distribution
 }
 \usage{
-rcpp_hello_world()	
+rw_Metropolis()	
 }
 \examples{
 \dontrun{
-rcpp_hello_world()
+sigma <- 2
+x0 <- 25
+N <- 2000
+res <- rw_Metropolis(sigma, x0, N)
 }
 }

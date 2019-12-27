@@ -3,20 +3,20 @@
 \alias{StatComp19086}
 \docType{package}
 \title{
-  A short title line describing what the package does
+  Statistics Computation Course Final Project
 }
 \description{
-  A more detailed description of what the package does. A length
-  of about one to five lines is recommended.
+  Statistics Computation Course Final Project
+  Include: 3 individual functions with detail information and example and all homeworks with rmd and html.
 }
 \details{
   This section should provide a more detailed overview of how to use the
   package, including the most important functions.
 }
 \author{
-Your Name, email optional.
+Huihang Liu, dawn.gnius@outlook.com.
 
-Maintainer: Your Name <your@email.com>
+Maintainer: hhl <dawn.gnius@outlook.com>
 }
 \references{
   This optional section can contain literature or other references for
@@ -29,6 +29,6 @@ Maintainer: Your Name <your@email.com>
 \examples{
   \dontrun{
      ## Optional simple examples of the most important functions
-     ## These can be in \dontrun{} and \donttest{} blocks.   
+     rw_Metropolis(sigma, x0, N)
   }
 }

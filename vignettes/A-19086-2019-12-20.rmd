@@ -2,9 +2,7 @@
 title: "Homework 11"
 author: "By 19086"
 date: "`r Sys.Date()`"
-output: 
-  html_document:
-    # css: style.css
+output: html_document
 ---
 
 ```{r setup, include=FALSE, warning=FALSE}
@@ -112,7 +110,7 @@ This is r code, using rcpp to call the cpp code above.
 ```{r}
 library(Rcpp) # Attach R package "Rcpp"
 # Define function in rw_Metropolis.cpp
-sourceCpp("./rw_Metropolis.cpp")
+sourceCpp("../src/rw_Metropolis.cpp")
 # data preparation, setting 1
 N <- 2000
 sigma <- c(.05, .5, 2, 16)
@@ -126,7 +124,7 @@ cat(" Accept rate: \n", 1-c(rw1.cpp$k /N, rw2.cpp$k /N, rw3.cpp$k /N, rw4.cpp$k 
 
 Four chains are generated for different variances $\sigma^2$ of the proposal distribution. 
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE}
 library(rmutil)                       # for qlaplace
 refline <- qlaplace(c(.025, .975))    # target quantile value
 par(mfrow=c(2,2))

@@ -1,11 +1,11 @@
 Package: StatComp19086
 Type: Package
-Title: What the Package Does in One 'Title Case' Line
+Title: Statistics Computation Final Project
 Version: 1.0
 Date: 2019-12-20
-Author: 19086
+Author: lhh
 Maintainer: lhh <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.3)
+Imports: Rcpp (>= 1.0.3), rmutil, microbenchmark
 LinkingTo: Rcpp

@@ -15,9 +15,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rw_Metropolis
+List rw_Metropolis(double sigma, double x0, int N);
+RcppExport SEXP _StatComp19086_rw_Metropolis(SEXP sigmaSEXP, SEXP x0SEXP, SEXP NSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    rcpp_result_gen = Rcpp::wrap(rw_Metropolis(sigma, x0, N));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_StatComp19086_rcpp_hello_world", (DL_FUNC) &_StatComp19086_rcpp_hello_world, 0},
+    {"_StatComp19086_rw_Metropolis", (DL_FUNC) &_StatComp19086_rw_Metropolis, 3},
     {NULL, NULL, 0}
 };
 

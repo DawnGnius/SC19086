@@ -8,3 +8,11 @@
 * Run R CMD check to check the package tarball.
 
 Read "Writing R Extensions" for more information.
+
+## Cpp files
+
+1. directly put cpp files into the ./src florde. 
+
+2. "Build" -- "install and restrat"
+
+3. rcpp function is achievable after 'library()'.

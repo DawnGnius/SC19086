@@ -7,5 +7,9 @@ Author: lhh
 Maintainer: lhh <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.3), rmutil, microbenchmark
+Imports: Rcpp (>= 1.0.3)
 LinkingTo: Rcpp
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

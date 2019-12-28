@@ -1,0 +1,57 @@
+---
+title: "my-vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(StatComp19086)
+```
+
+## Preparation and Development Cycle
+
+This is a vignette rmarkdown file. 
+> Reference: https://r-pkgs.org/vignettes.html
+
+### To create your first vignette, run:
+
+`usethis::use_vignette("my-vignette")`
+This will:
+
+1. Create a vignettes/ directory.
+
+2. Add the necessary dependencies to DESCRIPTION (i.e. it adds knitr to the `Suggests` and `VignetteBuilder` fields).
+
+3. Draft a vignette, `vignettes/my-vignette.Rmd`. 
+
+### Create a package bundle with the vignettes included
+
+There are 2 methods:
+
+1. `devtools::build_vignettes()` Build all vignettes from the console.
+
+2. `devtools::build()` Create a package bundle with the vignettes included.
+
+Note that 
+```
+#> devtools::build()
+#>Building the package will delete...
+#>  'C:/Users/Gnius/Documents/Code/R/StatComp-R/inst/doc'
+#>Are you sure?
+```
+
+Note that
+RStudio’s `Build & reload` does not build vignettes to save time. 
+Similarly, `devtools::install_github()` (and friends) will not build vignettes by default because they’re time consuming and may require additional packages. 
+You can force building with `devtools::install_github(build_vignettes = TRUE)`. 
+This will also install all suggested packages.

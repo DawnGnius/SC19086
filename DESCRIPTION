@@ -3,13 +3,26 @@ Type: Package
 Title: Statistics Computation Final Project
 Version: 1.0
 Date: 2019-12-20
-Author: lhh
-Maintainer: lhh <dawn.gnius@outlook.com>
+Author: Huihang Liu
+Maintainer: Huihang Liu <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.3)
 LinkingTo: Rcpp
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    ggplot2,
+    grid,
+    corrplot,
+    bootstrap,
+    boot,
+    DAAG,
+    Ball,
+    MASS,
+    snowfall,
+    rmutil,
+    microbenchmark,
+    tibble
 VignetteBuilder: knitr
+RoxygenNote: 7.0.2

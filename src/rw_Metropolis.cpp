@@ -1,5 +1,20 @@
 #include <Rcpp.h>
 using namespace Rcpp;
+
+//' @title A Metropolis sampler using Rcpp
+//' @description A Metropolis sampler using Rcpp
+//' @param N the number of samples
+//' @param x0 the number of between-sample random number
+//' @param sigma variance
+//' @return a List with a random sample of size \code{n} and k
+//' @examples
+//' \dontrun{
+//' sigma <- 2
+//' x0 <- 25
+//' N <- 2000
+//' res <- rw_Metropolis(sigma, x0, N)
+//' }
+//' @export
 // [[Rcpp::export]]
 List rw_Metropolis(double sigma, double x0, int N) {
     NumericVector x(N);

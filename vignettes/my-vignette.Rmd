@@ -1,5 +1,6 @@
 ---
 title: "my-vignette"
+author: Huihang Liu
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{my-vignette}

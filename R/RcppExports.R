@@ -5,6 +5,20 @@ rcpp_hello_world <- function() {
     .Call(`_StatComp19086_rcpp_hello_world`)
 }
 
+#' @title A Metropolis sampler using Rcpp
+#' @description A Metropolis sampler using Rcpp
+#' @param N the number of samples
+#' @param x0 the number of between-sample random number
+#' @param sigma variance
+#' @return a List with a random sample of size \code{n} and k
+#' @examples
+#' \dontrun{
+#' sigma <- 2
+#' x0 <- 25
+#' N <- 2000
+#' res <- rw_Metropolis(sigma, x0, N)
+#' }
+#' @export
 rw_Metropolis <- function(sigma, x0, N) {
     .Call(`_StatComp19086_rw_Metropolis`, sigma, x0, N)
 }

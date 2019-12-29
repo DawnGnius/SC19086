@@ -23,8 +23,12 @@ Read "Writing R Extensions" for more information.
 # install
 library(devtools)
 devtools::install_github("DawnGnius/StatComp19086")
+# devtools::install_github("DawnGnius/StatComp19086", build_vignettes=TRUE)
 
 # load
 library(StatComp19086)
-# we can use it.
+# we can use it. 
+
+# remove 
+remove.packages("StatComp19086", lib="~/R/win-library/3.6")
 ```

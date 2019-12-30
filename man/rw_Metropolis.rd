@@ -3,15 +3,12 @@
 \name{rw_Metropolis}
 \alias{rw_Metropolis}
 \title{A Metropolis sampler using Rcpp}
-\usage{
-rw_Metropolis(sigma, x0, N)
-}
 \arguments{
-\item{sigma}{variance}
+\item{N}{the number of samples}
 
 \item{x0}{the number of between-sample random number}
 
-\item{N}{the number of samples}
+\item{sigma}{variance}
 }
 \value{
 a List with a random sample of size \code{n} and k

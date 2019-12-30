@@ -6,6 +6,7 @@ Date: 2019-12-20
 Author: Huihang Liu
 Maintainer: Huihang Liu <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.
+Encoding: UTF-8
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.3)
 LinkingTo: Rcpp

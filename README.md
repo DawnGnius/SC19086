@@ -11,12 +11,11 @@ Read "Writing R Extensions" for more information.
 
 ## Cpp files
 
-1. directly put cpp files into the ./src florde. 
+1. directly put cpp files into the `src` floder. 
 
 2. "Build" -- "install and restrat"
 
-3. rcpp function is achievable after 'library()'.
-
+3. rcpp function is achievable after `library(pck)`.
 
 ## Vignettes Preparation and Development Cycle
 
@@ -65,33 +64,47 @@ any packages used by the vignette must be declared in the DESCRIPTION
 mainly use `devtools`
 
 1. load all
-
+    use `devtools::load_all()` in R console.
 2. check()
+   use `devtools::check()` in R console.
 
-3. `man` floder (if need modify documents)
+3. Edit `man` floder (if modification is needed)
 
-Create documents (.Rd files and NAMESPACE)
+    1. Edit your `r` or `cpp` file correctly.
 
-`devtools::document()`
+    > See slides AR3_.pdf page 4.
 
-See slides AR3_ page 4. 
+    1. using `devtools::document()`
 
-4. vignette (if need modify)
+    > This will create documents in `man` .Rd files and create NAMESPACE file.
+    > Before use `document()`, you should delete NAMESPACE.
 
-See above. 
+4. Edit `vignettes` floder (if modification is needed)
+
+    > See above.
 
 ## Install and Use
 
 ```r
-# install
-library(devtools)
-devtools::install_github("DawnGnius/StatComp19086")
-# devtools::install_github("DawnGnius/StatComp19086", build_vignettes=TRUE)
+# install from remote
+devtools::install_github("DawnGnius/StatComp19086", build_vignettes=TRUE)
+using `build_vignettes`, we can force installing package with vignettes.
 
-# loads
+# install from local 
+build_vignettes = FALSE
+using `build_vignettes`, we can force installing package with vignettes.
+
+# load this package
 library(StatComp19086)
-# we can use it. 
 
-# remove 
+# remove from your lib
 remove.packages("StatComp19086", lib="~/R/win-library/3.6")
 ```
+
+# Bugs
+
+1. cpp function cannot be called, after installing from local.
+
+    > add `@useDynLib StatComp19086, .registration = TRUE` into cpp files --- this may not work
+    > add `Encoding: UTF-8` into DESCRIPTION
+    > add `useDynLib(StatComp19086, .registration=TRUE)` into NAMESPACE by hand after using `devtools::document()` and before we upload/install the package.

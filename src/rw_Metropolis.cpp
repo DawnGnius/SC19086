@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+//' @name rw_Metropolis
 //' @title A Metropolis sampler using Rcpp
 //' @description A Metropolis sampler using Rcpp
 //' @param N the number of samples
@@ -15,6 +16,7 @@ using namespace Rcpp;
 //' res <- rw_Metropolis(sigma, x0, N)
 //' }
 //' @export
+//' @useDynLib StatComp19086, .registration = TRUE
 // [[Rcpp::export]]
 List rw_Metropolis(double sigma, double x0, int N) {
     NumericVector x(N);

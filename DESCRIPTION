@@ -13,7 +13,18 @@ Imports:
     MASS,
     snowfall,
     ggplot2,
-    L1pack
+    L1pack,
+    knitr,
+    rmarkdown,
+    grid,
+    corrplot,
+    bootstrap,
+    boot,
+    DAAG,
+    Ball,
+    rmutil,
+    microbenchmark,
+    tibble
 LinkingTo: Rcpp
 Suggests: 
     knitr,

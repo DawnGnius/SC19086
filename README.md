@@ -119,3 +119,7 @@ Then we need to focuce on file contents
 4. Cannot install my package in other computers.
 
     Add dependencies into `DESCRIPTION`, it's not auto.
+
+5. Cannot instal my package in other computers [build vignettes error]
+
+    Add dependencies into `Imports` rather than `Suggests` in `DESCRIPTION` file.

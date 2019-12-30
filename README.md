@@ -113,3 +113,4 @@ Then we need to focuce on file contents
     4. Use `findstr /s /i "StatComp19086.DLL" *.*` to deal with the most difficult thing. And then, everything works well.
 
 3. Cannot find function after installing.
+    Check `NAMESPACE` export function. If not exist, document() again.

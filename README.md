@@ -38,7 +38,7 @@ devtools::install_github("DawnGnius/SC19086", build_vignettes=TRUE)
 # using `build_vignettes`, we can force installing package with vignettes.
 
 # install from local
-devtools::install("DawnGnius/SC19086", build_vignettes=TRUE)
+devtools::install(".", build_vignettes=TRUE)
 # using `build_vignettes`, we can force installing package with vignettes.
 
 # load this package
@@ -113,4 +113,9 @@ Then we need to focuce on file contents
     4. Use `findstr /s /i "StatComp19086.DLL" *.*` to deal with the most difficult thing. And then, everything works well.
 
 3. Cannot find function after installing.
+    
     Check `NAMESPACE` export function. If not exist, document() again.
+
+4. Cannot install my package in other computers.
+
+    Add dependencies into `DESCRIPTION`, it's not auto.

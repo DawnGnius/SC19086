@@ -8,20 +8,22 @@ Maintainer: Huihang Liu <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.
 Encoding: UTF-8
 License: GPL (>= 2)
-Imports: Rcpp (>= 1.0.3)
+Imports: 
+    Rcpp (>= 1.0.3),
+    MASS,
+    snowfall,
+    ggplot2,
+    L1pack
 LinkingTo: Rcpp
 Suggests: 
     knitr,
     rmarkdown,
-    ggplot2,
     grid,
     corrplot,
     bootstrap,
     boot,
     DAAG,
     Ball,
-    MASS,
-    snowfall,
     rmutil,
     microbenchmark,
     tibble

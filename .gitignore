@@ -6,3 +6,7 @@ src/*.o
 src/*.so
 src/*.dll
 inst/doc
+Books/
+Ref/StatComp18003-master/.gitignore
+Ref/
+Review/

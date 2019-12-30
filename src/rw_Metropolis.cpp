@@ -15,8 +15,10 @@ using namespace Rcpp;
 //' N <- 2000
 //' res <- rw_Metropolis(sigma, x0, N)
 //' }
-//' @export
 //' @useDynLib StatComp19086, .registration = TRUE
+//' @exportPattern "^[[:alpha:]]+"
+//' @importFrom Rcpp evalCpp
+//' @export
 // [[Rcpp::export]]
 List rw_Metropolis(double sigma, double x0, int N) {
     NumericVector x(N);

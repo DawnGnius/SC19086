@@ -105,6 +105,14 @@ remove.packages("StatComp19086", lib="~/R/win-library/3.6")
 
 1. cpp function cannot be called, after installing from local.
 
-    > add `@useDynLib StatComp19086, .registration = TRUE` into cpp files --- this may not work
+    > add `@useDynLib StatComp19086, .registration = TRUE` into cpp files befor `@export` line
+
+    > add `@importFrom Rcpp evalCpp` into any one cpp file
+
+    > add `@exportPattern "^[[:alpha:]]+"` into any one cpp file
+
     > add `Encoding: UTF-8` into DESCRIPTION
-    > add `useDynLib(StatComp19086, .registration=TRUE)` into NAMESPACE by hand after using `devtools::document()` and before we upload/install the package.
+
+    > `devtools::document()` will auto create/update .Rd files in `man` floder and also `NAMESPACE`
+    
+    >> Please, Check `Rcpp::Rcpp.package.skeleton()` for detials.

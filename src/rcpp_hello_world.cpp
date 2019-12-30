@@ -11,7 +11,6 @@ using namespace Rcpp;
 //' rcpp_hello_world()
 //' }
 //' @export
-//' @useDynLib StatComp19086, .registration = TRUE
 // [[Rcpp::export]]
 List rcpp_hello_world() {
 

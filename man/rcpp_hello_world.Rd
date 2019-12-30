@@ -3,6 +3,9 @@
 \name{rcpp_hello_world}
 \alias{rcpp_hello_world}
 \title{Simple cpp code}
+\usage{
+rcpp_hello_world()
+}
 \value{
 a List z
 }

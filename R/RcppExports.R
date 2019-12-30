@@ -10,7 +10,6 @@
 #' rcpp_hello_world()
 #' }
 #' @export
-#' @useDynLib StatComp19086, .registration = TRUE
 rcpp_hello_world <- function() {
     .Call(`_StatComp19086_rcpp_hello_world`)
 }
@@ -29,8 +28,10 @@ rcpp_hello_world <- function() {
 #' N <- 2000
 #' res <- rw_Metropolis(sigma, x0, N)
 #' }
-#' @export
 #' @useDynLib StatComp19086, .registration = TRUE
+#' @exportPattern "^[[:alpha:]]+"
+#' @importFrom Rcpp evalCpp
+#' @export
 rw_Metropolis <- function(sigma, x0, N) {
     .Call(`_StatComp19086_rw_Metropolis`, sigma, x0, N)
 }

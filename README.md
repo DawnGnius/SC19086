@@ -123,3 +123,4 @@ Then we need to focuce on file contents
 5. Cannot instal my package in other computers [build vignettes error]
 
     Add dependencies into `Imports` rather than `Suggests` in `DESCRIPTION` file.
+    > [dependencies auto install pkgs in "Depends", "Imports", "LinkingTo"](https://stackoverflow.com/questions/14171148/how-to-tell-cran-to-install-package-dependencies-automatically)

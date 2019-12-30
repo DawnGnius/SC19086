@@ -24,6 +24,6 @@ Sigma <- matrix(rep(rho, p*p), p, p); diag(Sigma) <- rep(1, p)
 dat <- MASS::mvrnorm(n, rep(0,p), Sigma)
 Sigma.eigen <- eigen(Sigma)
 mu <- unlist(base::lapply(X=1:p, FUN=function(ii) sqrt(n)*beta[ii]*sqrt(var(dat[, ii]))/sig))
-fdp(0.01)
+my.fdp(0.01)
 }
 }

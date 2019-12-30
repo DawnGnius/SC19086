@@ -109,4 +109,7 @@ This is a strange request, but we may occure it. We should change all filename f
 Then we need to focuce on file contents
     1. DESCRIPTION
     2. `src`, `R`, `man` floder are important. Something we can change by hand, something cannot.
-    3. Use `findstr /s /i "StatComp19086.DLL" *.*` to deal with the most difficult thing. And then, everything works well.
+    3. Notice: `@useDynLib SC19086, .registration = TRUE`, please change `NAMESPACE` by hand before `devtools::document()`
+    4. Use `findstr /s /i "StatComp19086.DLL" *.*` to deal with the most difficult thing. And then, everything works well.
+
+3. Cannot find function after installing.

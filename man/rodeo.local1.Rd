@@ -42,6 +42,11 @@ for (ii in 1:Num.Cmp) {
 }
 t <- seq(-3, 1, 0.05)
 h <- unlist(base::lapply(X=t, FUN=rodeo.local.bw1, x=x))
-plot(t, h, "l", main="Bandwidth of Rodeo", xlab="x", ylab="h")
+t <- seq(-3, 1, 0.05)
+h <- unlist(base::lapply(X=t, FUN=rodeo.local.bw1, x=x))
+fit.rodeo <- rodeo.local1(t=t, x=x)
+plot(t, fit.rodeo, "l", lty=2, ylim=c(0,2.5), xlim=c(-3, 1), main="Rodeo", xlab="x", ylab="Density")
+lines(y, z, lty=1, lwd=2)
+legend("topright", legend=c("True Density", "Rodeo"), col=1, lty=c(1, 2), lwd=c(2, 1))
 }
 }

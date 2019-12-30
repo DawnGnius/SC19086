@@ -5,16 +5,6 @@
 
 using namespace Rcpp;
 
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _SC19086_rcpp_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
 // rw_Metropolis
 List rw_Metropolis(double sigma, double x0, int N);
 RcppExport SEXP _SC19086_rw_Metropolis(SEXP sigmaSEXP, SEXP x0SEXP, SEXP NSEXP) {
@@ -30,7 +20,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_SC19086_rcpp_hello_world", (DL_FUNC) &_SC19086_rcpp_hello_world, 0},
     {"_SC19086_rw_Metropolis", (DL_FUNC) &_SC19086_rw_Metropolis, 3},
     {NULL, NULL, 0}
 };

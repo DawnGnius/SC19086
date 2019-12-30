@@ -15,7 +15,7 @@ using namespace Rcpp;
 //' N <- 2000
 //' res <- rw_Metropolis(sigma, x0, N)
 //' }
-//' @useDynLib StatComp19086, .registration = TRUE
+//' @useDynLib SC19086, .registration = TRUE
 //' @exportPattern "^[[:alpha:]]+"
 //' @importFrom Rcpp evalCpp
 //' @export

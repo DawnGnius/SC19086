@@ -14,7 +14,12 @@ library(L1pack)
 #' @examples
 #' \dontrun{
 #' set.seed(12345)
-#' n <- 100; rho <- 0.5; sig <- 2; p.nonzero <- 10; beta.nonzero <- 1
+#' n <- 100; rho <- 0.5; sig <- 2; p.nonzero <- 10; beta.nonzero <- 1; p <- 100
+#' beta <- c(rep(beta.nonzero, p.nonzero), rep(0, p-p.nonzero))
+#' Sigma <- matrix(rep(rho, p*p), p, p); diag(Sigma) <- rep(1, p)
+#' dat <- MASS::mvrnorm(n, rep(0,p), Sigma)
+#' Sigma.eigen <- eigen(Sigma)
+#' mu <- unlist(base::lapply(X=1:p, FUN=function(ii) sqrt(n)*beta[ii]*sqrt(var(dat[, ii]))/sig))
 #' fdp(0.01)
 #' }
 #' @export
@@ -54,7 +59,7 @@ fdp <- function(t){
 
 #' @title A full experient using fdp()
 #' @description A full experient using fdp()
-#' @param p prob
+#' @param p Number of parameters in the linear model
 #' @param t point to be estimated
 #' @return plots
 #' @examples
@@ -78,17 +83,17 @@ my.fun <- function(p, t){
     snowfall::sfLibrary(MASS)
     snowfall::sfLibrary(L1pack)
     snowfall::sfExport("p", "mu", "Sigma", "t", "p.nonzero", "Sigma.eigen", "rho")
-    fdp.repeat <- unlist(snowfall::sfLapply(rep(0.01, 1000), fdp))
+    fdp.repeat <- unlist(snowfall::sfLapply(rep(0.01, 100), fdp))
     snowfall::sfStop()
     
     # figure
     tmp.data <- data.frame(fdp=fdp.repeat[(1:p)*2-1])
     tmp.data.lim <- data.frame(fdp=fdp.repeat[(1:p)*2])
     pic <- ggplot()
-    pic <- pic + geom_histogram(data=tmp.data, aes(fdp, y=..density..), bins=20, 
-                                color=1, alpha=0.1) 
-    pic <- pic + geom_histogram(data=tmp.data.lim, aes(fdp, y=..density..), 
-                                bins=20, color=2, alpha=0.5)
+    # pic <- pic + geom_histogram(data=tmp.data, aes(fdp, y=..density..), bins=5, 
+    #                             color=1, alpha=0.1) 
+    pic <- pic + geom_histogram(data=tmp.data.lim, aes(fdp, y=..density..),
+                                bins=5, color=2, alpha=0.5)
     pic <- pic + ggtitle(paste("FDP with p=", p, "t=", t, sep=' '))
     plot(pic)
 }

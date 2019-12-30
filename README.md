@@ -1,21 +1,47 @@
-* Edit the help file skeletons in 'man', possibly combining help files
-  for multiple functions.
-* Edit the exports in 'NAMESPACE', and add necessary imports.
-* Put any C/C++/Fortran code in 'src'.
-* If you have compiled code, add a useDynLib() directive to
-  'NAMESPACE'.
-* Run R CMD build to build the package tarball.
-* Run R CMD check to check the package tarball.
+# Summary on writting R package
 
-Read "Writing R Extensions" for more information.
+> Read "Writing R Extensions" for more information.
+>
+> Read r-pkgs.org for details.
 
-## Cpp files
+## Create a package
 
-1. directly put cpp files into the `src` floder. 
+1. load all
+    use `devtools::load_all()` in R console.
+2. check()
+   use `devtools::check()` in R console.
+3. Edit `man` floder (if modification is needed)
 
-2. "Build" -- "install and restrat"
+    1. Edit your `r` or `cpp` file correctly.
 
-3. rcpp function is achievable after `library(pck)`.
+    > See slides AR3_.pdf page 4.
+
+    1. using `devtools::document()`
+
+    > This will create documents in `man` .Rd files and create NAMESPACE file.
+    > Before use `document()`, you should delete NAMESPACE.
+
+4. Edit `vignettes` floder (if modification is needed)
+
+    > See above.
+
+## Install and Use
+
+```r
+# install from remote
+devtools::install_github("DawnGnius/StatComp19086", build_vignettes=TRUE)
+# using `build_vignettes`, we can force installing package with vignettes.
+
+# install from local
+devtools::install("DawnGnius/StatComp19086", build_vignettes=TRUE)
+# using `build_vignettes`, we can force installing package with vignettes.
+
+# load this package
+library(StatComp19086)
+
+# remove from your lib
+remove.packages("StatComp19086", lib="~/R/win-library/3.6")
+```
 
 ## Vignettes Preparation and Development Cycle
 
@@ -55,64 +81,18 @@ Similarly, `devtools::install_github()` (and friends) will not build vignettes b
 You can force building with `devtools::install_github(build_vignettes = TRUE)`. 
 This will also install all suggested packages.
 
-### Description
-
-any packages used by the vignette must be declared in the DESCRIPTION
-
-
-## Create a package
-mainly use `devtools`
-
-1. load all
-    use `devtools::load_all()` in R console.
-2. check()
-   use `devtools::check()` in R console.
-
-3. Edit `man` floder (if modification is needed)
-
-    1. Edit your `r` or `cpp` file correctly.
-
-    > See slides AR3_.pdf page 4.
-
-    1. using `devtools::document()`
-
-    > This will create documents in `man` .Rd files and create NAMESPACE file.
-    > Before use `document()`, you should delete NAMESPACE.
-
-4. Edit `vignettes` floder (if modification is needed)
-
-    > See above.
-
-## Install and Use
-
-```r
-# install from remote
-devtools::install_github("DawnGnius/StatComp19086", build_vignettes=TRUE)
-using `build_vignettes`, we can force installing package with vignettes.
-
-# install from local 
-build_vignettes = FALSE
-using `build_vignettes`, we can force installing package with vignettes.
-
-# load this package
-library(StatComp19086)
-
-# remove from your lib
-remove.packages("StatComp19086", lib="~/R/win-library/3.6")
-```
-
-# Bugs
+## Bugs
 
 1. cpp function cannot be called, after installing from local.
 
     > add `@useDynLib StatComp19086, .registration = TRUE` into cpp files befor `@export` line
-
+    >
     > add `@importFrom Rcpp evalCpp` into any one cpp file
-
+    >
     > add `@exportPattern "^[[:alpha:]]+"` into any one cpp file
-
+    >
     > add `Encoding: UTF-8` into DESCRIPTION
-
+    >
     > `devtools::document()` will auto create/update .Rd files in `man` floder and also `NAMESPACE`
-    
+    >
     >> Please, Check `Rcpp::Rcpp.package.skeleton()` for detials.

@@ -19,9 +19,9 @@ knitr::opts_chunk$set(
 library(StatComp19086)
 ```
 
-## Simulation Settings
+## Experiments
 
-In the simulation studies, we consider $p = 2000$, $n = 100$, $\sigma = 2$, the number of false null hypotheses $p_1 = 10$, and the nonzero $\beta_i = 1$, unless stated otherwise. 
+In this simulation studies, we consider $p = 2000$, $n = 100$, $\sigma = 2$, the number of false null hypotheses $p_1 = 10$, and the nonzero $\beta_i = 1$, unless stated otherwise. 
 We will present six different dependence structures for $\Sigma$ of the test statistics $(Z_1,\dots, Z_p)T \sim N((\mu_1, \dots , \mu_p)^T ,\Sigma)$. 
 $\Sigma$ is the correlation matrix of a random sample of size $n$ of $p$-dimensional vector $\mathbf{X}_i = (X_{i1}, \dots , X_{ip})$, and $\mu_j = \sqrt{n} \beta_j \hat{\sigma}_j / \sigma, j = 1, \dots , p$. 
 The data-generating process vector $X_i$’s are as follows.
@@ -130,29 +130,29 @@ my.fun <- function(p, t){
     sqrt(n)*beta[ii]*sqrt(var(dat[, ii]))/sig))
   
   # parallel calculation
-  snowfall::sfInit(parallel = TRUE, cpus = 40)
+  snowfall::sfInit(parallel = TRUE, cpus = 3)
   snowfall::sfLibrary(MASS)
   snowfall::sfLibrary(L1pack)
   snowfall::sfExport("p", "mu", "Sigma", "t", "p.nonzero", "Sigma.eigen", "rho")
-  fdp.repeat <- unlist(snowfall::sfLapply(rep(0.01, 1000), fdp))
+  fdp.repeat <- unlist(snowfall::sfLapply(rep(0.01, 100), fdp))
   snowfall::sfStop()
   
   # figure
   tmp.data <- data.frame(fdp=fdp.repeat[(1:p)*2-1])
   tmp.data.lim <- data.frame(fdp=fdp.repeat[(1:p)*2])
   pic <- ggplot()
-  pic <- pic + geom_histogram(data=tmp.data, aes(fdp, y=..density..), bins=20, 
+  pic <- pic + geom_histogram(data=tmp.data, aes(fdp, y=..density..), bins=5, 
                               color=1, alpha=0.1) 
   pic <- pic + geom_histogram(data=tmp.data.lim, aes(fdp, y=..density..), 
-                              bins=20, color=2, alpha=0.5)
+                              bins=5, color=2, alpha=0.5)
   pic <- pic + ggtitle(paste("FDP with p=", p, "t=", t, sep=' '))
   plot(pic)
 }
 
 my.fun(p=100, t=0.01)
-my.fun(p=500, t=0.01)
-my.fun(p=100, t=0.005)
-my.fun(p=500, t=0.005)
+# my.fun(p=500, t=0.01)
+# my.fun(p=100, t=0.005)
+# my.fun(p=500, t=0.005)
 ```
 
 The grey bars in the figures is the density of $FDR$ and the red bars in the figures represent the density of $\widehat{FDR}$.

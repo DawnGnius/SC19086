@@ -23,7 +23,7 @@ library(L1pack)
 #' fdp(0.01)
 #' }
 #' @export
-fdp <- function(t){
+my.fdp <- function(t){
     ##  FDP
     Z <- MASS::mvrnorm(1, mu, Sigma)
     pvalue <- unlist(base::lapply(X=1:p, FUN=function(ii) 1-pnorm(abs(Z[ii]))))
@@ -57,8 +57,8 @@ fdp <- function(t){
     return(rbind(re1, re2))
 }
 
-#' @title A full experient using fdp()
-#' @description A full experient using fdp()
+#' @title A full experient using my.fdp()
+#' @description A full experient using my.fdp()
 #' @param p Number of parameters in the linear model
 #' @param t point to be estimated
 #' @return plots
@@ -66,10 +66,10 @@ fdp <- function(t){
 #' \dontrun{
 #' set.seed(12345)
 #' n <- 100; rho <- 0.5; sig <- 2; p.nonzero <- 10; beta.nonzero <- 1
-#' my.fun(p=100, t=0.01)
+#' my.plot(p=100, t=0.01)
 #' }
 #' @export
-my.fun <- function(p, t){
+my.plot <- function(p, t){
     # Equal correlation
     beta <- c(rep(beta.nonzero, p.nonzero), rep(0, p-p.nonzero))
     Sigma <- matrix(rep(rho, p*p), p, p); diag(Sigma) <- rep(1, p)
@@ -83,7 +83,7 @@ my.fun <- function(p, t){
     snowfall::sfLibrary(MASS)
     snowfall::sfLibrary(L1pack)
     snowfall::sfExport("p", "mu", "Sigma", "t", "p.nonzero", "Sigma.eigen", "rho")
-    fdp.repeat <- unlist(snowfall::sfLapply(rep(0.01, 100), fdp))
+    fdp.repeat <- unlist(snowfall::sfLapply(rep(0.01, 100), my.fdp))
     snowfall::sfStop()
     
     # figure

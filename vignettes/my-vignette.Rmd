@@ -1,5 +1,5 @@
 ---
-title: "my-vignette"
+title: "My-Vignette"
 author: Huihang Liu
 output: rmarkdown::html_vignette
 vignette: >
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(StatComp19086)
+library(SC19086)
 ```
 
 # Project one: FDP Estimation

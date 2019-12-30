@@ -2,14 +2,18 @@
 
 > Read "Writing R Extensions" for more information.
 >
-> Read r-pkgs.org for details.
+> Read [R Packages](r-pkgs.org) for details.
 
-## Create a package
+## Build a package
 
 1. load all
+
     use `devtools::load_all()` in R console.
+
 2. check()
+
    use `devtools::check()` in R console.
+
 3. Edit `man` floder (if modification is needed)
 
     1. Edit your `r` or `cpp` file correctly.
@@ -19,6 +23,7 @@
     1. using `devtools::document()`
 
     > This will create documents in `man` .Rd files and create NAMESPACE file.
+    >
     > Before use `document()`, you should delete NAMESPACE.
 
 4. Edit `vignettes` floder (if modification is needed)
@@ -29,18 +34,18 @@
 
 ```r
 # install from remote
-devtools::install_github("DawnGnius/StatComp19086", build_vignettes=TRUE)
+devtools::install_github("DawnGnius/SC19086", build_vignettes=TRUE)
 # using `build_vignettes`, we can force installing package with vignettes.
 
 # install from local
-devtools::install("DawnGnius/StatComp19086", build_vignettes=TRUE)
+devtools::install("DawnGnius/SC19086", build_vignettes=TRUE)
 # using `build_vignettes`, we can force installing package with vignettes.
 
 # load this package
-library(StatComp19086)
+library(SC19086)
 
 # remove from your lib
-remove.packages("StatComp19086", lib="~/R/win-library/3.6")
+remove.packages("SC19086", lib="~/R/win-library/3.6")
 ```
 
 ## Vignettes Preparation and Development Cycle
@@ -71,7 +76,7 @@ Note that
 ```
 #> devtools::build()
 #>Building the package will delete...
-#>  'C:/Users/Gnius/Documents/Code/R/StatComp-R/inst/doc'
+#>  'C:/Users/Gnius/Documents/Code/R/SC-R/inst/doc'
 #>Are you sure?
 ```
 
@@ -85,7 +90,7 @@ This will also install all suggested packages.
 
 1. cpp function cannot be called, after installing from local.
 
-    > add `@useDynLib StatComp19086, .registration = TRUE` into cpp files befor `@export` line
+    > add `@useDynLib SC19086, .registration = TRUE` into cpp files befor `@export` line
     >
     > add `@importFrom Rcpp evalCpp` into any one cpp file
     >
@@ -96,3 +101,12 @@ This will also install all suggested packages.
     > `devtools::document()` will auto create/update .Rd files in `man` floder and also `NAMESPACE`
     >
     >> Please, Check `Rcpp::Rcpp.package.skeleton()` for detials.
+
+2. Rename your R package and your R project
+
+This is a strange request, but we may occure it. We should change all filename firstly. 
+
+Then we need to focuce on file contents
+    1. DESCRIPTION
+    2. `src`, `R`, `man` floder are important. Something we can change by hand, something cannot.
+    3. Use `findstr /s /i "StatComp19086.DLL" *.*` to deal with the most difficult thing. And then, everything works well.

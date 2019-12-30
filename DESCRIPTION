@@ -1,8 +1,8 @@
-Package: StatComp19086
+Package: SC19086
 Type: Package
 Title: Statistics Computation Final Project
-Version: 1.0
-Date: 2019-12-20
+Version: 1.1
+Date: 2019-12-30
 Author: Huihang Liu
 Maintainer: Huihang Liu <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.

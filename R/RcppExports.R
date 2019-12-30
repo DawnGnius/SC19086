@@ -11,7 +11,7 @@
 #' }
 #' @export
 rcpp_hello_world <- function() {
-    .Call(`_StatComp19086_rcpp_hello_world`)
+    .Call(`_SC19086_rcpp_hello_world`)
 }
 
 #' @name rw_Metropolis
@@ -33,6 +33,6 @@ rcpp_hello_world <- function() {
 #' @importFrom Rcpp evalCpp
 #' @export
 rw_Metropolis <- function(sigma, x0, N) {
-    .Call(`_StatComp19086_rw_Metropolis`, sigma, x0, N)
+    .Call(`_SC19086_rw_Metropolis`, sigma, x0, N)
 }
 

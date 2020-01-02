@@ -34,6 +34,7 @@
 
 ```r
 # install from remote
+devtools::install_github("DawnGnius/SC19086", ref = "master", dependencies = TRUE, upgrade = "ask", build_vignettes = TRUE)
 devtools::install_github("DawnGnius/SC19086", build_vignettes=TRUE)
 # using `build_vignettes`, we can force installing package with vignettes.
 

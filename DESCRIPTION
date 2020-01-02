@@ -8,23 +8,13 @@ Maintainer: Huihang Liu <dawn.gnius@outlook.com>
 Description: This is a R package for Statistics Computation Course in fall 2019.
 Encoding: UTF-8
 License: GPL (>= 2)
+Depends: R (>=3.6.2)
 Imports: 
     Rcpp (>= 1.0.3),
     MASS,
     snowfall,
     ggplot2,
     L1pack,
-    knitr,
-    rmarkdown,
-    grid,
-    corrplot,
-    bootstrap,
-    boot,
-    DAAG,
-    Ball,
-    rmutil,
-    microbenchmark,
-    tibble
 LinkingTo: Rcpp
 Suggests: 
     knitr,
@@ -37,6 +27,7 @@ Suggests:
     Ball,
     rmutil,
     microbenchmark,
-    tibble
+    tibble,
+    plot3D
 VignetteBuilder: knitr
 RoxygenNote: 7.0.2

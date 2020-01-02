@@ -12,6 +12,10 @@ rodeo.local.bw1(xx, x, h.init = 1.3/log(log(n)), beta = 0.9, cn = log(n)/n)
 \item{x}{data points}
 
 \item{h.init}{initial smooth parameter}
+
+\item{beta}{learning rate, default 0.9}
+
+\item{cn}{a turning parameter, default log(n)/n}
 }
 \value{
 h selected by this method
@@ -30,7 +34,8 @@ mu <- 3 * ((2/3)^(1:Num.Cmp) - 1)
 sigma <- (2/3)^(1:Num.Cmp)
 x <- NULL
 for (ii in 1:Num.Cmp) {
-  com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
+  com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), 
+               mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
   eval(parse(text=com_txt))
   com_txt <- paste("x <- c(x, com", ii, ")", sep="")
   eval(parse(text=com_txt))

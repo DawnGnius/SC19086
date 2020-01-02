@@ -3,6 +3,8 @@
 #' @param xx the point to be estimated
 #' @param x data points
 #' @param h.init initial smooth parameter
+#' @param beta learning rate, default 0.9
+#' @param cn a turning parameter, default log(n)/n
 #' @return h selected by this method
 #' @examples
 #' \dontrun{
@@ -15,7 +17,8 @@
 #' sigma <- (2/3)^(1:Num.Cmp)
 #' x <- NULL
 #' for (ii in 1:Num.Cmp) {
-#'   com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
+#'   com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), 
+#'                mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
 #'   eval(parse(text=com_txt))
 #'   com_txt <- paste("x <- c(x, com", ii, ")", sep="")
 #'   eval(parse(text=com_txt))
@@ -64,7 +67,8 @@ rodeo.local.bw1 <- function(xx, x, h.init=1.3/log(log(n)), beta=0.9, cn=log(n)/n
 #' sigma <- (2/3)^(1:Num.Cmp)
 #' x <- NULL
 #' for (ii in 1:Num.Cmp) {
-#'   com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
+#'   com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), 
+#'                        mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
 #'   eval(parse(text=com_txt))
 #'   com_txt <- paste("x <- c(x, com", ii, ")", sep="")
 #'   eval(parse(text=com_txt))

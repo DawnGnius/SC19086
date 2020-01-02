@@ -11,6 +11,8 @@ library(L1pack)
 #' @import ggplot2
 #' @import MASS
 #' @import snowfall
+#' @importFrom graphics plot
+#' @importFrom stats pnorm qnorm var
 #' @examples
 #' \dontrun{
 #' set.seed(12345)

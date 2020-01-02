@@ -28,7 +28,8 @@ mu <- 3 * ((2/3)^(1:Num.Cmp) - 1)
 sigma <- (2/3)^(1:Num.Cmp)
 x <- NULL
 for (ii in 1:Num.Cmp) {
-  com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
+  com_txt <- paste("com", ii, " <- rnorm(length(which(multi==", ii, ")), 
+                       mean=", mu[ii], ", sd=", sigma[ii], ")",sep="")
   eval(parse(text=com_txt))
   com_txt <- paste("x <- c(x, com", ii, ")", sep="")
   eval(parse(text=com_txt))
